@@ -111,6 +111,39 @@ svg.i{width:16px;height:16px;flex:none}
 html.aero .pane{border-radius:12px;border-color:rgba(255,255,255,.9);box-shadow:inset 0 1px 0 #fff}
 html.aero .vseg{border-radius:999px}
 #app.dropping .pbody{box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent-soft)}
+.allmenu.right{left:auto;right:6px}
+.allmenu svg.i{color:var(--muted)}
+.mrow.on svg.i,.mrow[aria-pressed="true"] svg.i{color:var(--accent)}
+.mrow[aria-pressed="true"] .t::after{content:"  ✓";color:var(--accent)}
+.held{flex:none;margin:6px 6px 0;border:1px solid var(--warn);background:var(--warn-bg);border-radius:8px;overflow:hidden;max-height:40%;display:flex;flex-direction:column}
+.held[hidden]{display:none}
+.hhead{display:flex;align-items:center;gap:2px;padding:2px 4px 2px 8px;font-size:12.5px;font-weight:600}
+.hhead svg.i{width:13px;height:13px;color:var(--warn);flex:none}
+.hhead .ht{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:4px}
+.hbody{overflow:auto;min-height:0;padding:0 8px 6px}
+.held.folded .hbody{display:none}
+.heldtext{white-space:pre-wrap;font-family:var(--f-edit);font-size:13px;line-height:1.45;max-height:9em;overflow:auto}
+.listed{flex:1;min-height:0;overflow:auto;padding:4px 10px 8px}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+.checks li{display:flex;align-items:center;gap:6px;border-radius:5px;padding:1px 2px}
+.checks li:hover{background:var(--hover)}
+.checks .ick{flex:none;width:17px;height:17px;accent-color:var(--accent);margin:0 2px}
+.checks .itxt{flex:1;min-width:0;border:0;background:none;font-family:var(--f-edit);font-size:14px;padding:4px 2px;outline:none;color:var(--ink)}
+.checks li.done .itxt{text-decoration:line-through;color:var(--muted)}
+.checks .ix{flex:none;width:22px;height:22px;border:0;background:none;border-radius:4px;color:var(--muted);display:grid;place-items:center;padding:0;opacity:0}
+.checks li:hover .ix,.checks .ix:focus{opacity:1}
+.checks .ix svg{width:11px;height:11px}
+.checks.compact .itxt{font-size:13px;padding:2px}
+.addrow{display:flex;align-items:center;gap:6px;padding:2px 4px}
+.addrow .plus{width:21px;text-align:center;color:var(--muted)}
+.addrow .iadd{flex:1;min-width:0;border:0;border-bottom:1px dashed var(--rule);background:none;font-family:var(--f-edit);font-size:14px;padding:4px 2px;outline:none;color:var(--ink)}
+.addrow .iadd:focus{border-bottom-color:var(--accent)}
+.listfoot{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);padding:6px 4px 0}
+.pclist{flex:1;min-height:40px;overflow:auto;padding:2px 6px 4px}
+.pane.collapsed .pclist{display:none}
+.tag.list{border-color:var(--accent);color:var(--accent)}
+#app.single .ftabs,#app.single .vseg,#app.single #allBtn,#app.single #newBtn,#app.single #holdBtn,#app.single #floatBtn,#app.single .held{display:none!important}
+body.single-page #setup,body.single-page .card.notes-card,body.single-page #ver{display:none!important}
 .away{border:1px dashed var(--rule);border-radius:8px;padding:22px;text-align:center;color:var(--muted)}
 .list{list-style:none;margin:0;padding:0;display:grid;gap:2px}
 .list li{display:flex;gap:10px;align-items:center;border-radius:6px;padding:6px 8px}
@@ -255,6 +288,10 @@ html.aero .mp-now{border-radius:14px;background:rgba(255,255,255,.6)}
   <symbol id="i-list" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.3" d="M2 3.5h12M2 8h12M2 12.5h12"/></symbol>
   <symbol id="i-tabs" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="3" width="13" height="10.5" rx="1.2"/><path d="M1.5 6h13M6 3v3M10.5 3v3"/></g></symbol>
   <symbol id="i-split" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2" width="13" height="5.2" rx="1.2"/><rect x="1.5" y="8.8" width="13" height="5.2" rx="1.2"/></g></symbol>
+  <symbol id="i-pin" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" d="M10 1.5 14.5 6l-2 .8-2.6 2.6.4 3.1-1.3 1.3L6.4 11 2 15.2M6.4 11 3.6 8.2l1.3-1.3 3.1.4 2.6-2.6Z"/></symbol>
+  <symbol id="i-newwin" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="4.5" width="9" height="9" rx="1.2"/><path d="M5.5 4.5V2.5h8v8h-3"/></g></symbol>
+  <symbol id="i-more" viewBox="0 0 16 16"><g fill="currentColor"><circle cx="3" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="13" cy="8" r="1.3"/></g></symbol>
+  <symbol id="i-check" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="1.5" width="13" height="13" rx="2"/><path d="m4.5 8.2 2.3 2.3 4.7-5"/></g></symbol>
   <symbol id="i-float" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2.5" width="13" height="10" rx="1.5"/><rect x="8" y="7" width="5" height="4" rx=".6" fill="currentColor" stroke="none"/></g></symbol>
 </svg>
 
@@ -267,6 +304,11 @@ html.aero .mp-now{border-radius:14px;background:rgba(255,255,255,.6)}
 
 <div class="wrap">
   <div class="warnbox" id="msg" hidden></div>
+  <section class="card" id="singleIntro" hidden>
+    <h2 id="singleTitle">Float this note</h2>
+    <p class="dim" style="margin:0">Click <b>Pop out on top</b> to float just this note in its own window. Keep this tab open while it floats. Minimizing the browser is fine.</p>
+    <p class="dim" style="margin:0">Firefox lets you float several notes at once. Chrome and Edge may allow only one floating window at a time, so opening another can close the first.</p>
+  </section>
 
   <section class="card" id="setup">
     <div class="row"><h2 class="grow">Install Floating Notes</h2><button class="tbtn" id="setupDone">Hide</button></div>
@@ -277,22 +319,30 @@ html.aero .mp-now{border-radius:14px;background:rgba(255,255,255,.6)}
   <div id="home"><div id="app">
     <div class="abar">
       <button class="ib" id="allBtn" title="All notes" aria-label="All notes" aria-expanded="false"><svg class="i"><use href="#i-list"/></svg></button>
-      <button class="ib" id="newBtn" title="New note" aria-label="New note"><svg class="i"><use href="#i-plus"/></svg></button>
+      <button class="ib" id="newBtn" title="New note or list" aria-label="New note or list" aria-haspopup="menu" aria-expanded="false"><svg class="i"><use href="#i-plus"/></svg></button>
       <span class="vseg" role="group" aria-label="Layout"><button data-view="tabs" title="Tabs: one note at a time" aria-label="Tabs"><svg class="i"><use href="#i-tabs"/></svg></button><button data-view="split" title="Split: up to 4 notes at once" aria-label="Split view"><svg class="i"><use href="#i-split"/></svg></button></span>
       <span class="grow"></span>
-      <button class="ib" id="aeroBtn" title="Frutiger Aero mode" aria-label="Frutiger Aero mode" aria-pressed="false"><svg class="i"><use href="#i-bubble"/></svg></button>
-      <button class="ib" id="sndBtn" title="Music and sound effects" aria-label="Music and sound effects" aria-expanded="false"><svg class="i"><use href="#i-music"/></svg></button>
+      <button class="ib" id="holdBtn" title="Hold this note at the top while you switch notes" aria-label="Hold this note" aria-pressed="false"><svg class="i"><use href="#i-pin"/></svg></button>
+      <button class="ib" id="floatBtn" title="Float this note in its own window" aria-label="Float this note in its own window"><svg class="i"><use href="#i-newwin"/></svg></button>
       <button class="ib" id="shotBtn" title="Add a screenshot (or paste one with Ctrl+V)" aria-label="Add screenshot"><svg class="i"><use href="#i-shot"/></svg></button>
       <button class="ib" id="symBtn" title="Engineering symbols" aria-label="Show symbols" aria-pressed="false"><svg class="i"><use href="#i-omega"/></svg></button>
+      <button class="ib" id="moreBtn" title="Aero mode, music and sounds" aria-label="More" aria-haspopup="menu" aria-expanded="false"><svg class="i"><use href="#i-more"/></svg></button>
+    </div>
+    <div class="allmenu" id="newMenu" hidden><button data-new="note"><svg class="i"><use href="#i-plus"/></svg><span class="t">New note</span></button><button data-new="list"><svg class="i"><use href="#i-check"/></svg><span class="t">New list (checkboxes)</span></button></div>
+    <div class="allmenu right" id="moreMenu" hidden>
+      <button class="mrow" id="aeroBtn" aria-pressed="false"><svg class="i"><use href="#i-bubble"/></svg><span class="t">Frutiger Aero mode</span></button>
+      <button class="mrow" id="sndBtn" aria-expanded="false"><svg class="i"><use href="#i-music"/></svg><span class="t">Music and sounds</span></button>
     </div>
     <div class="ftabs" id="ftabs" role="tablist" aria-label="Open notes"></div>
     <div class="allmenu" id="allMenu" hidden></div>
+    <div class="held" id="held" hidden></div>
     <div class="head" id="head">
       <input class="title" id="title" placeholder="Untitled" aria-label="Note title">
       <input class="course" id="course" placeholder="Course" aria-label="Course code">
     </div>
     <div class="syms" id="syms" hidden aria-label="Insert symbol"></div>
     <textarea class="body" id="body" spellcheck="true" placeholder="Type your notes. Paste screenshots with Ctrl+V (take one with Win+Shift+S). The clock button stamps the time." aria-label="Note text"></textarea>
+    <div class="listed" id="listEd" hidden></div>
     <div class="panes" id="panes" hidden></div>
     <div class="foot">
       <button class="ib" id="stampBtn" title="Insert the time" aria-label="Insert the time"><svg class="i"><use href="#i-clock"/></svg></button>
@@ -310,10 +360,10 @@ html.aero .mp-now{border-radius:14px;background:rgba(255,255,255,.6)}
     <input type="file" id="shotIn" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
   </div></div>
 
-  <p class="dim ver" id="ver">Floating Notes v1.1 · notes stay on this device</p>
+  <p class="dim ver" id="ver">Floating Notes v1.2 · notes stay on this device</p>
   <div class="away" id="away" hidden>Your notes are in the floating window. Close it to bring them back here.</div>
 
-  <section class="card">
+  <section class="card notes-card">
     <div class="row"><h2 class="grow">All notes on this device</h2><button class="tbtn" id="copyAll">Copy all</button><button class="tbtn" id="saveAll">Save all</button></div>
     <ul class="list" id="list"></ul>
     <p class="dim" style="margin:0">Notes live in this browser. To move them to another device, use <b>Save all</b> and keep the file somewhere safe.</p>
@@ -329,27 +379,45 @@ html.aero .mp-now{border-radius:14px;background:rgba(255,255,255,.6)}
 <script>
 (function(){
 const KEY="floating-notes-v1", SETUP_KEY="floating-notes-setup";
-const VERSION="1.1";
+const VERSION="1.2";
 const nbUrl=()=>(ls.get("floating-notes-nb-url")||"").trim();
 // Cache element references once: after pop-out they live in the floating window's document.
 const els={};document.querySelectorAll("[id]").forEach(el=>els[el.id]=el);
 const $=id=>els[id];
-const app=$("app"), home=$("home");
+const app=$("app"), home=$("home"), TITLE_PH=$("title").placeholder;
 let notes=[], cur=null, pip=null, saveT=null, delId=null;
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}}};
 
 let tabs=[],view="tabs",collapsed=[];
+/* ---- one note per window: index.html#float=<id> ---- */
+const floatId=(location.hash.match(/^#float=([\w-]+)/)||[])[1]||null;
+let single=false, held=null, heldFold=false;
+/* ---- safe saving when several windows share the same notes ----
+   Each window keeps its own copy. On save it merges with what's stored: per note, the newest edit wins,
+   and deleted notes are remembered so another window can't bring them back. */
+const DEL_KEY=KEY+"-deleted";
+function readStored(){try{return JSON.parse(ls.get(KEY)||"[]")}catch(e){return[]}}
+function readDeleted(){try{return JSON.parse(ls.get(DEL_KEY)||"{}")||{}}catch(e){return{}}}
+function mergeIn(stored,dead){
+  let changedAny=false;
+  for(const sn of stored){if(dead[sn.id])continue;const ln=notes.find(n=>n.id===sn.id);
+    if(!ln){notes.push(sn);changedAny=true}
+    else if((sn.updatedAt||0)>(ln.updatedAt||0)){for(const k of Object.keys(ln))if(!(k in sn))delete ln[k];Object.assign(ln,sn);changedAny=true}}
+  const before=notes.length;notes=notes.filter(n=>!dead[n.id]);if(notes.length!==before)changedAny=true;
+  return changedAny}
 function load(){try{notes=JSON.parse(ls.get(KEY)||"[]")}catch(e){notes=[]}
   if(!notes.length)notes=[blank()];
   try{tabs=JSON.parse(ls.get(KEY+"-tabs")||"[]")}catch(e){tabs=[]}
   try{collapsed=JSON.parse(ls.get(KEY+"-collapsed")||"[]")}catch(e){collapsed=[]}
   view=ls.get(KEY+"-view")==="split"?"split":"tabs";
+  held=ls.get(KEY+"-held")||null;heldFold=!!ls.get(KEY+"-heldfold");
+  if(floatId&&notes.some(n=>n.id===floatId)){single=true;tabs=[floatId];cur=floatId;view="tabs";collapsed=[];held=null}
   fixTabs();if(!tabs.includes(cur))cur=tabs[0]}
 function fixTabs(){tabs=tabs.filter(id=>notes.some(n=>n.id===id));collapsed=collapsed.filter(id=>tabs.includes(id));
   if(!tabs.length)tabs=[notes.slice().sort((a,b)=>b.updatedAt-a.updatedAt)[0].id];if(!tabs.includes(cur))cur=tabs[0]}
-function saveLayout(){ls.set(KEY+"-tabs",JSON.stringify(tabs));ls.set(KEY+"-view",view);ls.set(KEY+"-collapsed",JSON.stringify(collapsed))}
+function saveLayout(){if(single)return;ls.set(KEY+"-held",held||"");ls.set(KEY+"-heldfold",heldFold?"1":"");ls.set(KEY+"-tabs",JSON.stringify(tabs));ls.set(KEY+"-view",view);ls.set(KEY+"-collapsed",JSON.stringify(collapsed))}
 /* open a note in a tab (and so in split view); in split, keep it among the 4 visible panes */
 function openTab(id){if(!tabs.includes(id)){const i=tabs.indexOf(cur);tabs.splice(i<0?tabs.length:i+1,0,id)}
   if(view==="split"&&tabs.indexOf(id)>3){tabs.splice(tabs.indexOf(id),1);tabs.splice(3,0,id)}
@@ -359,47 +427,59 @@ function closeTab(id){const i=tabs.indexOf(id);if(i<0)return;tabs.splice(i,1);
   if(cur===id)cur=tabs[Math.min(i,tabs.length-1)];collapsed=collapsed.filter(x=>x!==id);saveLayout();sfx("close");render()}
 const activeBody=()=>view==="split"?(app.querySelector(`.pane[data-id="${cur}"] .pbody`)||$("body")):$("body");
 function focusActive(){const b=activeBody();if(b&&!(view==="split"&&collapsed.includes(cur)))b.focus()}
-function blank(){const t=Date.now();return{id:uid(),title:"",course:"",body:"",createdAt:t,updatedAt:t}}
-function save(){$("status").textContent=ls.set(KEY,JSON.stringify(notes))?statusText():"Not saved: storage blocked"}
+function blank(type){const t=Date.now();const n={id:uid(),title:"",course:"",body:"",createdAt:t,updatedAt:t};if(type==="list"){n.type="list";n.items=[]}return n}
+const isList=n=>!!n&&n.type==="list";
+const listBody=n=>(n.items||[]).map(i=>(i.done?"- [x] ":"- [ ] ")+i.text).join("\n");
+const doneText=n=>{const it=n.items||[];return it.length?`${it.filter(i=>i.done).length} of ${it.length} done`:"No items yet"};
+function save(){mergeIn(readStored(),readDeleted());
+  $("status").textContent=ls.set(KEY,JSON.stringify(notes))?statusText():"Not saved: storage blocked"}
+function forget(id){const d=readDeleted();d[id]=Date.now();
+  for(const k of Object.keys(d))if(Date.now()-d[k]>90*864e5)delete d[k];ls.set(DEL_KEY,JSON.stringify(d))}
 const note=()=>notes.find(n=>n.id===cur);
 const label=n=>(n.course?n.course+" · ":"")+(n.title||"Untitled");
 const words=s=>(s||"").trim().split(/\s+/).filter(Boolean).length;
-const statusText=()=>{const k=(note().shots||[]).length;return words(note().body)+" words"+(k?` · ${k} screenshot${k===1?"":"s"}`:"")+" · Saved"};
+const statusText=()=>{const n=note();if(!n)return"";const k=(n.shots||[]).length;return(isList(n)?doneText(n):words(n.body)+" words")+(k?` · ${k} screenshot${k===1?"":"s"}`:"")+" · Saved"};
 
 function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2200)}
 function render(){
   const n=note();const sorted=notes.slice().sort((a,b)=>b.updatedAt-a.updatedAt);
   fixTabs();
   app.querySelectorAll(".vseg button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.view===view)));
-  $("ftabs").hidden=view==="split";$("head").hidden=view==="split";$("body").hidden=view==="split";$("panes").hidden=view!=="split";
+  $("ftabs").hidden=view==="split";$("head").hidden=view==="split";$("body").hidden=view==="split"||isList(n);$("panes").hidden=view!=="split";
+  $("listEd").hidden=view==="split"||!isList(n);
   renderTabs();
   if(view==="split")renderPanes();
   else{const doc=app.ownerDocument;
+    $("title").placeholder=isList(n)?"List name":TITLE_PH;
+    if(isList(n))drawList($("listEd"),n,false);
     if(doc.activeElement!==$("title")&&$("title").value!==n.title)$("title").value=n.title;
     if(doc.activeElement!==$("course")&&$("course").value!==n.course)$("course").value=n.course;
-    if(doc.activeElement!==$("body")&&$("body").value!==n.body)$("body").value=n.body}
-  $("status").textContent=statusText();renderShots();renderList();
+    if(!isList(n)&&doc.activeElement!==$("body")&&$("body").value!==n.body)$("body").value=n.body}
+  $("status").textContent=statusText();renderShots();renderList();renderHeld();
+  $("holdBtn").setAttribute("aria-pressed",String(held===cur));$("holdBtn").classList.toggle("on",held===cur);
+  $("holdBtn").title=held===cur?"Stop holding this note":"Hold this note at the top while you switch notes";
+  if(single){const t=label(n);app.ownerDocument.title=t;document.title=t+" · Floating Notes";$("singleTitle").textContent="Float “"+(n.title||"Untitled")+"”"}
 }
 function renderList(){
   const sorted=notes.slice().sort((a,b)=>b.updatedAt-a.updatedAt);
-  $("list").innerHTML=sorted.map(x=>`<li><span class="t">${esc(x.title||"Untitled")}</span>${x.course?`<span class="tag">${esc(x.course)}</span>`:""}<span class="dim">${new Date(x.updatedAt).toLocaleDateString(undefined,{month:"short",day:"numeric"})}</span>
+  $("list").innerHTML=sorted.map(x=>`<li><span class="t">${esc(x.title||"Untitled")}</span>${isList(x)?`<span class="tag list">${esc(doneText(x))}</span>`:""}${x.course?`<span class="tag">${esc(x.course)}</span>`:""}<span class="dim">${new Date(x.updatedAt).toLocaleDateString(undefined,{month:"short",day:"numeric"})}</span>
     <button class="tbtn" data-open="${x.id}">Open</button>
     ${delId===x.id?`<button class="tbtn danger" data-delyes="${x.id}">Delete</button><button class="tbtn" data-delno="1">Cancel</button>`:`<button class="tbtn" data-del="${x.id}">Delete</button>`}</li>`).join("");
 }
 function renderTabs(){
-  $("ftabs").innerHTML=tabs.map(id=>{const x=notes.find(n=>n.id===id);return`<div class="ftab" role="tab" tabindex="0" data-tab="${id}" aria-selected="${id===cur}" title="${esc(label(x))}"><span class="tl">${esc(x.title||"Untitled")}</span><button class="x" data-closetab="${id}" aria-label="Close tab" title="Close tab (the note stays saved)"><svg class="i"><use href="#i-x"/></svg></button></div>`}).join("");
+  $("ftabs").innerHTML=tabs.map(id=>{const x=notes.find(n=>n.id===id);return`<div class="ftab" role="tab" tabindex="0" data-tab="${id}" aria-selected="${id===cur}" title="${esc(label(x))}">${isList(x)?'<svg class="i" style="width:12px;height:12px;flex:none;color:var(--accent)"><use href="#i-check"/></svg>':""}${id===held?'<svg class="i" style="width:12px;height:12px;flex:none;color:var(--warn)"><use href="#i-pin"/></svg>':""}<span class="tl">${esc(x.title||"Untitled")}</span><button class="x" data-closetab="${id}" aria-label="Close tab" title="Close tab (the note stays saved)"><svg class="i"><use href="#i-x"/></svg></button></div>`}).join("");
   const sel=$("ftabs").querySelector('[aria-selected="true"]');if(sel)sel.scrollIntoView({block:"nearest",inline:"nearest"});
 }
 let paneKey="";
 function renderPanes(){
-  const ids=tabs.slice(0,4);const key=ids.join(",")+"|"+collapsed.join(",");const box=$("panes");const doc=app.ownerDocument;
+  const ids=tabs.slice(0,4);const key=ids.map(id=>id+(isList(notes.find(n=>n.id===id))?":l":"")).join(",")+"|"+collapsed.join(",");const box=$("panes");const doc=app.ownerDocument;
   if(key!==paneKey||box.querySelectorAll(".pane").length!==ids.length){
     paneKey=key;
     box.innerHTML=ids.map(id=>{const c=collapsed.includes(id);return`<section class="pane${c?" collapsed":""}" data-id="${id}">
       <div class="phead"><button class="pcol" data-col="${id}" aria-expanded="${!c}" title="${c?"Show":"Fold"} this note">${c?"▸":"▾"}</button>
       <input class="ptitle" data-ptitle="${id}" placeholder="Untitled" aria-label="Note title">
       <button class="px" data-closetab="${id}" title="Remove from split view (the note stays saved)" aria-label="Remove from split view"><svg class="i"><use href="#i-x"/></svg></button></div>
-      <textarea class="pbody" data-pbody="${id}" spellcheck="true" placeholder="Type here…" aria-label="Note text"></textarea></section>`}).join("")
+      ${isList(notes.find(n=>n.id===id))?`<div class="pclist" data-plist="${id}"></div>`:`<textarea class="pbody" data-pbody="${id}" spellcheck="true" placeholder="Type here…" aria-label="Note text"></textarea>`}</section>`}).join("")
       +(ids.length<4?`<button class="paneadd" data-paneadd="1">+ Add a note to split view</button>`:"")
       +(tabs.length>4?`<div class="panemore">${tabs.length-4} more open note${tabs.length-4===1?"":"s"}. Switch to tabs to see ${tabs.length-4===1?"it":"them"}.</div>`:"");
   }
@@ -407,19 +487,21 @@ function renderPanes(){
     pn.classList.toggle("active",id===cur);
     const t=pn.querySelector(".ptitle"),b=pn.querySelector(".pbody");
     if(doc.activeElement!==t&&t.value!==x.title)t.value=x.title;
-    if(doc.activeElement!==b&&b.value!==x.body)b.value=x.body}
+    if(isList(x))drawList(pn.querySelector(".pclist"),x,true);
+    else if(b&&doc.activeElement!==b&&b.value!==x.body)b.value=x.body}
 }
 /* switch which note is active without rebuilding the editor (keeps typing focus) */
 function setCur(id){if(cur===id)return;cur=id;
   if(view==="split")app.querySelectorAll(".pane").forEach(p=>p.classList.toggle("active",p.dataset.id===id));
   $("ftabs").querySelectorAll(".ftab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.tab===id)));
-  $("status").textContent=statusText();renderShots()}
-function changed(){if(view==="split")return;AeroAudio.typingTick();const n=note();n.title=$("title").value;n.course=$("course").value.toUpperCase();n.body=$("body").value;n.updatedAt=Date.now();
-  $("status").textContent=words(n.body)+" words · Saving…";clearTimeout(saveT);saveT=setTimeout(()=>{save();render()},500)}
+  $("status").textContent=statusText();renderShots();renderHeld();
+  $("holdBtn").setAttribute("aria-pressed",String(held===cur));$("holdBtn").classList.toggle("on",held===cur)}
+function changed(){if(view==="split")return;AeroAudio.typingTick();const n=note();n.title=$("title").value;n.course=$("course").value.toUpperCase();if(!isList(n))n.body=$("body").value;n.updatedAt=Date.now();
+  $("status").textContent=(isList(n)?doneText(n):words(n.body)+" words")+" · Saving…";clearTimeout(saveT);saveT=setTimeout(()=>{save();render()},500)}
 ["title","course","body"].forEach(id=>$(id).addEventListener("input",changed));
 $("panes").addEventListener("input",e=>{const id=e.target.dataset.ptitle||e.target.dataset.pbody;if(!id)return;const n=notes.find(x=>x.id===id);if(!n)return;
   setCur(id);AeroAudio.typingTick();if(e.target.dataset.ptitle)n.title=e.target.value;else n.body=e.target.value;n.updatedAt=Date.now();
-  $("status").textContent=words(n.body)+" words · Saving…";clearTimeout(saveT);saveT=setTimeout(()=>{save();renderTabs();renderList()},500)});
+  $("status").textContent=words(n.body)+" words · Saving…";clearTimeout(saveT);saveT=setTimeout(()=>{save();renderTabs();renderList();renderHeld()},500)});
 $("panes").addEventListener("focusin",e=>{if(!e.target.matches("input,textarea"))return;const pn=e.target.closest(".pane");if(pn)setCur(pn.dataset.id)});
 $("panes").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
   if(b.dataset.col){const id=b.dataset.col;collapsed=collapsed.includes(id)?collapsed.filter(x=>x!==id):[...collapsed,id];saveLayout();sfx("click");renderPanes();if(!collapsed.includes(id)){setCur(id);focusActive()}return}
@@ -437,17 +519,111 @@ app.querySelector(".vseg").addEventListener("click",e=>{const b=e.target.closest
 /* all-notes menu */
 function toggleAll(force){const m=$("allMenu");const show=force??m.hidden;m.hidden=!show;$("allBtn").setAttribute("aria-expanded",String(show));if(!show)return;
   const sorted=notes.slice().sort((a,b)=>b.updatedAt-a.updatedAt);
-  m.innerHTML=sorted.map(x=>`<button data-pickn="${x.id}"><span class="t">${esc(label(x))}</span>${tabs.includes(x.id)?`<span class="open">open</span>`:""}</button>`).join("")+`<button data-pickn="__new"><span class="t">+ New note</span></button>`}
+  m.innerHTML=sorted.map(x=>`<button data-pickn="${x.id}"><span class="t">${esc(label(x))}</span>${tabs.includes(x.id)?`<span class="open">open</span>`:""}</button>`).join("")+`<button data-pickn="__new"><span class="t">+ New note</span></button><button data-pickn="__list"><span class="t">+ New list</span></button>`}
 $("allBtn").addEventListener("click",()=>toggleAll());
 $("allMenu").addEventListener("click",e=>{const b=e.target.closest("[data-pickn]");if(!b)return;toggleAll(false);
-  if(b.dataset.pickn==="__new"){$("newBtn").click();return}openTab(b.dataset.pickn);sfx("click");render();focusActive()});
-app.addEventListener("pointerdown",e=>{if(!$("allMenu").hidden&&!e.target.closest("#allMenu,#allBtn"))toggleAll(false)});
+  if(b.dataset.pickn==="__new"||b.dataset.pickn==="__list"){newNote(b.dataset.pickn==="__list"?"list":"note");return}openTab(b.dataset.pickn);sfx("click");render();focusActive()});
+app.addEventListener("pointerdown",e=>{if(!$("allMenu").hidden&&!e.target.closest("#allMenu,#allBtn"))toggleAll(false);
+  if(!$("newMenu").hidden&&!e.target.closest("#newMenu,#newBtn"))menu("newMenu","newBtn",false);
+  if(!$("moreMenu").hidden&&!e.target.closest("#moreMenu,#moreBtn"))menu("moreMenu","moreBtn",false)});
+function menu(m,b,force){const el=$(m);const show=force??el.hidden;el.hidden=!show;$(b).setAttribute("aria-expanded",String(show))}
+$("newBtn").addEventListener("click",()=>{toggleAll(false);menu("newMenu","newBtn")});
+$("newMenu").addEventListener("click",e=>{const b=e.target.closest("[data-new]");if(!b)return;menu("newMenu","newBtn",false);newNote(b.dataset.new)});
+$("moreBtn").addEventListener("click",()=>menu("moreMenu","moreBtn"));
+$("moreMenu").addEventListener("click",()=>menu("moreMenu","moreBtn",false));
+app.addEventListener("keydown",e=>{if(e.key==="Escape"){menu("newMenu","newBtn",false);menu("moreMenu","moreBtn",false);toggleAll(false)}});
+
+/* =================== list notes: a checklist that lives inside a note =================== */
+function drawList(el,n,compact){
+  if(!el)return;const items=n.items||(n.items=[]);const doc=app.ownerDocument;
+  const sig=items.map(i=>i.id).join(",");
+  if(el.dataset.lid!==n.id||el.dataset.sig!==sig||!el.querySelector(".checks")){
+    const fa=doc.activeElement,keep=fa&&el.contains(fa)?{iid:fa.closest("li")?.dataset.iid,add:fa.classList.contains("iadd"),pos:fa.selectionStart}:null;
+    el.dataset.lid=n.id;el.dataset.sig=sig;
+    el.innerHTML=`<ul class="checks${compact?" compact":""}">${items.map(i=>`<li data-iid="${i.id}"><input type="checkbox" class="ick" aria-label="Done"><input class="itxt" aria-label="List item" spellcheck="true"><button class="ix" data-ix="${i.id}" title="Delete item" aria-label="Delete item"><svg class="i"><use href="#i-x"/></svg></button></li>`).join("")}</ul>
+      <div class="addrow"><span class="plus">+</span><input class="iadd" placeholder="${items.length?"Add an item":"Type a to-do and press Enter"}" aria-label="Add an item" spellcheck="true"></div>
+      <div class="listfoot"><span class="lcount"></span><button class="tbtn" data-clear="1">Clear finished</button></div>`;
+    if(keep){const f=keep.add?el.querySelector(".iadd"):el.querySelector(`li[data-iid="${keep.iid}"] .itxt`);if(f){f.focus();if(keep.pos!=null){try{f.setSelectionRange(keep.pos,keep.pos)}catch(e){}}}}
+  }
+  for(const i of items){const li=el.querySelector(`li[data-iid="${i.id}"]`);if(!li)continue;
+    li.classList.toggle("done",!!i.done);const c=li.querySelector(".ick"),t=li.querySelector(".itxt");
+    c.checked=!!i.done;if(doc.activeElement!==t&&t.value!==i.text)t.value=i.text}
+  el.querySelector(".lcount").textContent=doneText(n);
+  el.querySelector("[data-clear]").hidden=!items.some(i=>i.done);
+}
+const listEls=id=>[...app.querySelectorAll(`[data-lid="${id}"]`)];
+function redrawList(n){for(const el of listEls(n.id))drawList(el,n,el.classList.contains("pclist")||el.classList.contains("hbody"))}
+function touchList(n,now){n.body=listBody(n);n.updatedAt=Date.now();redrawList(n);
+  if(n.id===cur)$("status").textContent=doneText(n)+" · Saving…";
+  clearTimeout(saveT);const done=()=>{save();renderTabs();renderList();renderHeld();if(n.id===cur)$("status").textContent=statusText()};
+  if(now)done();else saveT=setTimeout(done,500)}
+const listOf=el=>{const box=el.closest("[data-lid]");return box?notes.find(n=>n.id===box.dataset.lid):null};
+function focusItem(n,iid,atEnd){const el=listEls(n.id).find(x=>x.contains(app.ownerDocument.activeElement))||listEls(n.id)[0];if(!el)return;
+  const f=iid?el.querySelector(`li[data-iid="${iid}"] .itxt`):el.querySelector(".iadd");if(f){f.focus();const p=atEnd===false?0:f.value.length;f.setSelectionRange(p,p)}}
+function addItems(n,texts,after){const at=after?n.items.findIndex(i=>i.id===after)+1:n.items.length;const made=texts.map(t=>({id:"i"+uid(),text:t,done:false}));n.items.splice(at,0,...made);return made}
+app.addEventListener("change",e=>{if(!e.target.classList.contains("ick"))return;const n=listOf(e.target);if(!n)return;
+  const it=n.items.find(i=>i.id===e.target.closest("li").dataset.iid);if(!it)return;it.done=e.target.checked;sfx(it.done?"pop":"click");touchList(n,true)});
+app.addEventListener("input",e=>{const t=e.target;if(!t.classList.contains("itxt"))return;const n=listOf(t);if(!n)return;
+  const it=n.items.find(i=>i.id===t.closest("li").dataset.iid);if(!it)return;AeroAudio.typingTick();it.text=t.value;touchList(n)});
+app.addEventListener("keydown",e=>{const t=e.target;if(!t.classList||!(t.classList.contains("itxt")||t.classList.contains("iadd")))return;const n=listOf(t);if(!n)return;
+  const li=t.closest("li"),iid=li&&li.dataset.iid,idx=iid?n.items.findIndex(i=>i.id===iid):n.items.length;
+  if(e.key==="Enter"&&!e.isComposing){e.preventDefault();
+    if(t.classList.contains("iadd")){const v=t.value.trim();if(!v)return;t.value="";addItems(n,[v]);sfx("tick");touchList(n,true);focusItem(n,null);return}
+    const pos=t.selectionStart,rest=t.value.slice(pos);const it=n.items[idx];it.text=t.value.slice(0,pos).replace(/\s+$/,"");t.value=it.text;
+    const [m]=addItems(n,[rest.trim()],iid);touchList(n,true);focusItem(n,m.id,false);return}
+  if(e.key==="Backspace"&&iid&&t.selectionStart===0&&t.selectionEnd===0){
+    const it=n.items[idx];if(it.text&&idx===0)return;e.preventDefault();const prev=n.items[idx-1];
+    if(prev){const p=prev.text.length;prev.text+=it.text;n.items.splice(idx,1);touchList(n,true);focusItem(n,prev.id);const f=app.ownerDocument.activeElement;try{f.setSelectionRange(p,p)}catch(_){}}
+    else{n.items.splice(idx,1);touchList(n,true);focusItem(n,n.items[0]?n.items[0].id:null,false)}return}
+  if(e.key==="ArrowUp"||e.key==="ArrowDown"){const j=idx+(e.key==="ArrowUp"?-1:1);if(j<0)return;e.preventDefault();focusItem(n,j<n.items.length?n.items[j].id:null)}});
+app.addEventListener("paste",e=>{const t=e.target;if(!t.classList||!t.classList.contains("iadd"))return;const txt=e.clipboardData&&e.clipboardData.getData("text/plain");if(!txt||!/\n/.test(txt.trim()))return;
+  const n=listOf(t);if(!n)return;e.preventDefault();e.stopPropagation();
+  const lines=txt.split(/\r?\n/).map(l=>l.replace(/^\s*(?:[-*•]\s*)?(?:\[[ xX]?\]\s*)?/,"").trim()).filter(Boolean);
+  const made=addItems(n,lines);txt.split(/\r?\n/).filter(l=>l.trim()).forEach((l,i)=>{if(made[i]&&/\[[xX]\]/.test(l))made[i].done=true});touchList(n,true);focusItem(n,null);toast(`Added ${made.length} items`)},true);
+app.addEventListener("focusout",e=>{const t=e.target;if(!t.classList||!t.classList.contains("iadd")||!t.value.trim())return;const n=listOf(t);if(!n)return;
+  const v=t.value.trim();t.value="";addItems(n,[v]);touchList(n,true)});
+app.addEventListener("click",e=>{const b=e.target.closest("[data-ix],[data-clear]");if(!b)return;const n=listOf(b);if(!n)return;
+  if(b.dataset.ix){n.items=n.items.filter(i=>i.id!==b.dataset.ix);sfx("delete");touchList(n,true)}
+  else{const k=n.items.filter(i=>i.done).length;n.items=n.items.filter(i=>!i.done);sfx("delete");touchList(n,true);toast(`Cleared ${k} finished item${k===1?"":"s"}`)}});
+
+/* =================== hold: keep one note or list pinned at the top =================== */
+function heldVisible(){if(!held)return true;if(view==="split")return tabs.slice(0,4).includes(held)&&!collapsed.includes(held);return held===cur}
+function renderHeld(){
+  const box=$("held");const n=held&&notes.find(x=>x.id===held);
+  if(held&&!n){held=null;saveLayout()}
+  if(single||!n||heldVisible()){box.hidden=true;box.innerHTML="";box.removeAttribute("data-for");return}
+  box.hidden=false;box.classList.toggle("folded",heldFold);
+  if(box.dataset.for!==n.id+(isList(n)?":l":"")){box.dataset.for=n.id+(isList(n)?":l":"");
+    box.innerHTML=`<div class="hhead"><svg class="i"><use href="#i-pin"/></svg><span class="ht"></span>
+      <button class="pcol" data-h="fold" aria-expanded="${!heldFold}"></button>
+      <button class="pcol" data-h="open" title="Open it to edit" aria-label="Open held note"><svg class="i" style="width:13px;height:13px"><use href="#i-newwin"/></svg></button>
+      <button class="pcol" data-h="drop" title="Stop holding" aria-label="Stop holding"><svg class="i" style="width:12px;height:12px"><use href="#i-x"/></svg></button></div>
+      <div class="hbody">${isList(n)?"":`<div class="heldtext"></div>`}</div>`}
+  box.querySelector(".ht").textContent=(n.title||"Untitled")+(isList(n)?" · "+doneText(n):"");
+  const f=box.querySelector('[data-h="fold"]');f.textContent=heldFold?"▸":"▾";f.title=heldFold?"Show":"Fold";f.setAttribute("aria-expanded",String(!heldFold));
+  const hb=box.querySelector(".hbody");
+  if(isList(n))drawList(hb,n,true);else hb.querySelector(".heldtext").textContent=n.body||"(empty note)";
+}
+$("held").addEventListener("click",e=>{const b=e.target.closest("[data-h]");if(!b)return;
+  if(b.dataset.h==="fold"){heldFold=!heldFold;saveLayout();sfx("click");renderHeld()}
+  else if(b.dataset.h==="drop"){held=null;saveLayout();sfx("close");render()}
+  else{const id=held;openTab(id);sfx("click");render();focusActive()}});
+$("holdBtn").addEventListener("click",()=>{if(held===cur){held=null;toast("Stopped holding")}else{held=cur;heldFold=false;toast("Held. It stays at the top when you switch notes.")}saveLayout();sfx(held?"pop":"close");render()});
+
+/* =================== float one note in its own window =================== */
+$("floatBtn").addEventListener("click",()=>{save();const url=new URL(location.pathname+"#float="+cur,location.href).href;
+  const w=window.open(url,"fn-"+cur);if(w){sfx("open");toast("Opened in a new tab. Click Pop out on top there.")}
+  else toast("Your browser blocked the new tab. Allow pop-ups for this site and try again.")});
 
 /* symbols & time stamp */
 const SYMS=["σ","τ","ε","δ","Δ","θ","ω","α","β","λ","µ","ν","ρ","π","φ","Ω","Σ","∫","∂","√","∞","≈","≠","≤","≥","±","°","²","³","₀","₁","₂","×","·","→","⇒"];
 $("syms").innerHTML=SYMS.map(s=>`<button type="button" data-sym="${s}">${s}</button>`).join("");
 /* goes through the editor's own input path, so the right note is updated in tabs or split view */
-function insert(t){const b=activeBody();const s=b.selectionStart,e=b.selectionEnd;b.setRangeText(t,s,e,"end");b.focus();b.dispatchEvent(new Event("input",{bubbles:true}))}
+function insert(t){const n=note();
+  if(isList(n)){const doc=app.ownerDocument;let f=doc.activeElement;const els=listEls(n.id);
+    if(!(f&&f.matches&&f.matches(".itxt,.iadd")&&els.some(el=>el.contains(f)))){const el=els[0];if(!el)return;f=el.querySelector(".iadd")}
+    const s=f.selectionStart??f.value.length,e=f.selectionEnd??s;f.setRangeText(t,s,e,"end");f.focus();f.dispatchEvent(new Event("input",{bubbles:true}));return}
+  const b=activeBody();const s=b.selectionStart,e=b.selectionEnd;b.setRangeText(t,s,e,"end");b.focus();b.dispatchEvent(new Event("input",{bubbles:true}))}
 $("syms").addEventListener("mousedown",e=>{if(e.target.closest("button"))e.preventDefault()});
 $("syms").addEventListener("click",e=>{const b=e.target.closest("[data-sym]");if(b)insert(b.dataset.sym)});
 $("symBtn").addEventListener("click",()=>{const show=$("syms").hidden;$("syms").hidden=!show;$("symBtn").classList.toggle("on",show);$("symBtn").setAttribute("aria-pressed",String(show));ls.set(KEY+"-syms",show?"1":"")});
@@ -561,13 +737,14 @@ function renderNb(){const on=!!ls.get("floating-notes-nb-on");$("sendBtn").hidde
 $("nbOn").addEventListener("change",e=>{ls.set("floating-notes-nb-on",e.target.checked?"1":"");renderNb()});
 $("nbUrl").addEventListener("input",e=>{ls.set("floating-notes-nb-url",e.target.value);renderNb()});
 
-$("newBtn").addEventListener("click",()=>{sfx("newnote");const n=blank();notes.push(n);openTab(n.id);save();render();(view==="split"?app.querySelector(`.pane[data-id="${n.id}"] .ptitle`):$("title"))?.focus()});
+function newNote(type){sfx("newnote");const n=blank(type);notes.push(n);openTab(n.id);save();render();
+  (view==="split"?app.querySelector(`.pane[data-id="${n.id}"] .ptitle`):$("title"))?.focus()}
 $("list").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.open){openTab(b.dataset.open);delId=null;render();if(!pip)focusActive()}
   else if(b.dataset.del){delId=b.dataset.del;render()}
   else if(b.dataset.delno){delId=null;render()}
-  else if(b.dataset.delyes){sfx("delete");const gone=notes.find(n=>n.id===b.dataset.delyes);for(const sh of (gone&&gone.shots)||[])idb.del(sh.id);notes=notes.filter(n=>n.id!==b.dataset.delyes);if(!notes.length)notes=[blank()];fixTabs();saveLayout();delId=null;save();render()}
+  else if(b.dataset.delyes){sfx("delete");forget(b.dataset.delyes);if(held===b.dataset.delyes)held=null;const gone=notes.find(n=>n.id===b.dataset.delyes);for(const sh of (gone&&gone.shots)||[])idb.del(sh.id);notes=notes.filter(n=>n.id!==b.dataset.delyes);if(!notes.length)notes=[blank()];fixTabs();saveLayout();delId=null;save();render()}
 });
 
 /* install as an app (Chrome / Edge) */
@@ -598,14 +775,18 @@ $("popBtn").addEventListener("click",async()=>{
     catch(e){if(ss.href){const l=pip.document.createElement("link");l.rel="stylesheet";l.href=ss.href;pip.document.head.append(l)}}
   }
   pip.document.body.prepend(document.querySelector("svg").cloneNode(true));
-  pip.document.title="Notes";pip.document.body.className="pip";pip.document.documentElement.classList.toggle("aero",document.documentElement.classList.contains("aero"));sfx("open");
+  pip.document.title=single?label(note()):"Notes";pip.document.body.className="pip";pip.document.documentElement.classList.toggle("aero",document.documentElement.classList.contains("aero"));sfx("open");
   pip.document.body.append(app);
   $("away").hidden=false;$("popBtn").lastChild.textContent="Bring notes back";$("msg").hidden=true;
   pip.addEventListener("pagehide",()=>{home.append(app);pip=null;$("away").hidden=true;$("popBtn").lastChild.textContent="Pop out on top";save();render()});
   setTimeout(focusActive,50);
 });
 
-window.addEventListener("storage",e=>{if(e.key===KEY){load();render()}});
+window.addEventListener("storage",e=>{if(e.key!==KEY&&e.key!==DEL_KEY)return;
+  const was=cur;if(!mergeIn(readStored(),readDeleted()))return;
+  if(single&&!notes.some(n=>n.id===floatId)){if(pip)pip.close();app.hidden=true;showMsg("This note was deleted in another window. You can close this tab.");return}
+  if(!notes.length)notes=[blank()];fixTabs();if(was!==cur)saveLayout();
+  if(isList(note()))redrawList(note());render()});
 window.addEventListener("beforeunload",save);
 
 /* =================== Aero Audio: original sound effects (Web Audio) + your own music player =================== */
@@ -805,7 +986,10 @@ function setAero(on,announce){
 }
 $("aeroBtn").addEventListener("click",()=>setAero(!document.documentElement.classList.contains("aero"),true));
 if(ls.get("floating-notes-aero"))setAero(true);
-load();render();renderSetup();renderNb();
+load();
+if(single){app.classList.add("single");document.body.classList.add("single-page");$("singleIntro").hidden=false}
+else if(floatId){history.replaceState(null,"",location.pathname);setTimeout(()=>toast("That note isn't on this device anymore."),300)}
+render();renderSetup();renderNb();
 {const seen=ls.get("floating-notes-version");if(seen&&seen!==VERSION)setTimeout(()=>toast("Updated to v"+VERSION),600);ls.set("floating-notes-version",VERSION)}
 })();
 </script>
