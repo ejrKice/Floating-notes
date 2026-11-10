@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Floating Notes</title>
+<meta name="description" content="A notes window that floats on top of Zoom, slides and everything else. Notes stay on your device.">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#202020">
+<style>
+/* Floating Notes: companion to the Engineering Notebook, styled like Windows 11 Notepad.
+   The editor block (#app) moves into an always-on-top Document Picture-in-Picture window. */
+:root{
+  --strip:#202020; --bar:#2B2B2B; --editor:#272727; --pane:#232323; --fly:#2C2C2C; --hover:#383838; --press:#333;
+  --ink:#FFFFFF; --ink-2:#D6D6D6; --muted:#A0A0A0; --rule:#3B3B3B; --rule-2:#333;
+  --accent:#4CC2FF; --accent-ink:#000; --accent-soft:rgba(76,194,255,.14); --warn-bg:rgba(255,185,0,.14); --warn:#FFB900; --danger:#FF99A4;
+  --f-ui:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-display:"Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+  --f-edit:Consolas,"Cascadia Mono",Menlo,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root{
+  --strip:#EBEBEB; --bar:#F9F9F9; --editor:#FFFFFF; --pane:#F7F7F7; --fly:#F9F9F9; --hover:#EAEAEA; --press:#E0E0E0;
+  --ink:#1A1A1A; --ink-2:#2E2E2E; --muted:#5F5F5F; --rule:#E0E0E0; --rule-2:#EAEAEA;
+  --accent:#005FB8; --accent-ink:#fff; --accent-soft:rgba(0,95,184,.09); --warn-bg:#FFF4CE; --warn:#9D5D00; --danger:#C42B1C; color-scheme:light}}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--pane);color:var(--ink);font:14px/1.45 var(--f-ui)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:default}
+button:disabled{opacity:.4}
+:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
+::selection{background:rgba(76,194,255,.3)}
+svg.i{width:16px;height:16px;flex:none}
+.grow{flex:1;min-width:0}
+.row{display:flex;gap:8px;align-items:center;min-width:0}
+.dim{color:var(--muted);font-size:13px}
+.label{font-size:12px;font-weight:600;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid transparent;background:var(--accent);color:var(--accent-ink);border-radius:4px;padding:4px 12px;font-weight:600;white-space:nowrap;min-height:30px}
+.btn:hover:not(:disabled){filter:brightness(1.08)}
+.btn.std{background:var(--bar);color:var(--ink);border-color:var(--rule)}
+.btn.std:hover:not(:disabled){background:var(--hover);filter:none}
+.ib{display:inline-grid;place-items:center;width:32px;height:30px;border:0;background:none;border-radius:6px;color:var(--ink);flex:none}
+.ib:hover:not(:disabled){background:var(--hover)}
+.ib.on{background:var(--accent-soft);color:var(--accent)}
+.tbtn{display:inline-flex;align-items:center;gap:6px;border:0;background:none;border-radius:6px;padding:4px 9px;color:var(--ink);white-space:nowrap}
+.tbtn:hover:not(:disabled){background:var(--hover)}
+.tbtn.danger{color:var(--danger)}
+
+/* page chrome (main window only) */
+.strip{display:flex;align-items:center;gap:10px;background:var(--strip);padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+.strip h1{margin:0;font-family:var(--f-display);font-size:16px;font-weight:600}
+.strip img{width:22px;height:22px}
+.wrap{grid-template-columns:minmax(0,1fr);max-width:780px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px));display:grid;gap:14px}
+.card{background:var(--editor);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;display:grid;gap:10px}
+.card h2{margin:0;font-family:var(--f-display);font-size:16px;font-weight:600}
+.steps{margin:0;padding-left:22px;display:grid;gap:10px}
+.steps li::marker{color:var(--accent);font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:4px 10px;font-size:13px;color:var(--ink-2)}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.codeline{display:flex;gap:6px;align-items:stretch}
+.codeline textarea{flex:1;min-width:0;resize:none;height:62px;font-family:var(--f-edit);font-size:12px;line-height:1.4;border:1px solid var(--rule);border-radius:4px;background:var(--pane);padding:6px 8px;word-break:break-all}
+.warnbox{background:var(--warn-bg);border-radius:6px;padding:8px 10px;font-size:13px}
+.warnbox b{color:var(--warn)}
+.settings{border-top:1px solid var(--rule-2);padding-top:8px;display:grid;gap:8px}
+.settings summary{cursor:pointer;font-size:13px;color:var(--muted);font-weight:600}
+.settings[open]{gap:8px}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px}
+.nb-url{width:100%;border:1px solid var(--rule);border-radius:4px;background:var(--pane);padding:5px 8px;font-size:13px}
+.ver{text-align:center;margin:0}
+.away{border:1px dashed var(--rule);border-radius:8px;padding:22px;text-align:center;color:var(--muted)}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.list li{display:flex;gap:10px;align-items:center;border-radius:6px;padding:6px 8px}
+.list li:hover{background:var(--hover)}
+.list .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.tag{font-size:11.5px;border:1px solid var(--rule);border-radius:3px;padding:0 5px;color:var(--ink-2)}
+
+/* the editor (moves into the floating window) */
+#app{display:flex;flex-direction:column;background:var(--editor);border:1px solid var(--rule);border-radius:8px;overflow:hidden;height:min(560px,72vh);min-height:360px}
+body.pip{background:var(--editor);overflow:hidden}
+body.pip #app{height:100vh;min-height:0;border:0;border-radius:0}
+.abar{display:flex;align-items:center;gap:4px;background:var(--bar);border-bottom:1px solid var(--rule-2);padding:4px 6px}
+.abar select{flex:1;min-width:0;border:1px solid var(--rule);background:var(--editor);border-radius:4px;padding:3px 6px;font-size:13px}
+.head{display:flex;align-items:center;gap:8px;padding:10px 14px 4px}
+.title{flex:1;min-width:0;border:0;background:none;font-family:var(--f-display);font-weight:600;font-size:20px;line-height:1.25;padding:0;outline:none}
+.title::placeholder{color:var(--muted)}
+.course{width:84px;flex:none;border:1px solid var(--rule);background:var(--pane);border-radius:4px;padding:2px 6px;font-size:12px;text-transform:uppercase}
+.course::placeholder{text-transform:none;color:var(--muted)}
+.syms{display:flex;flex-wrap:wrap;gap:1px;padding:2px 10px 4px}
+.syms button{min-width:26px;border:0;background:none;border-radius:4px;padding:1px 4px;font-family:var(--f-edit);font-size:14px;color:var(--ink-2)}
+.syms button:hover{background:var(--hover);color:var(--ink)}
+textarea.body{flex:1;min-height:60px;resize:none;border:0;background:transparent;padding:6px 14px 10px;font-family:var(--f-edit);font-size:14.5px;line-height:1.6;outline:none;color:var(--ink)}
+textarea.body::placeholder{color:var(--muted)}
+.foot{display:flex;flex-wrap:wrap;gap:4px;align-items:center;background:var(--bar);border-top:1px solid var(--rule-2);padding:5px 6px}
+.status{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap;padding-right:4px}
+.toast{position:fixed;left:50%;bottom:52px;transform:translateX(-50%);background:var(--fly);color:var(--ink);border:1px solid var(--rule);box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:13px;padding:7px 12px;border-radius:6px;max-width:calc(100% - 24px);text-align:center;pointer-events:none;opacity:0;transition:opacity .15s;z-index:5}
+.toast.show{opacity:1}
+#app{position:relative}
+#app.dropping textarea.body{box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent-soft)}
+.shots{display:flex;gap:6px;overflow-x:auto;padding:2px 14px 8px;flex:none;scrollbar-width:thin}
+.shot{position:relative;flex:none;width:78px;height:52px;border:1px solid var(--rule);border-radius:4px;overflow:hidden;padding:0;background:var(--pane)}
+.shot:hover{border-color:var(--accent)}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+.shot span{position:absolute;left:3px;top:2px;font-size:10px;line-height:14px;background:var(--fly);color:var(--ink);border-radius:2px;padding:0 4px}
+.viewer{position:absolute;inset:0;z-index:4;background:var(--editor);display:flex;flex-direction:column}
+.viewer .vhead{display:flex;align-items:center;gap:6px;background:var(--bar);border-bottom:1px solid var(--rule-2);padding:4px 6px 4px 12px;font-weight:600}
+.viewer img{flex:1;min-height:0;width:100%;object-fit:contain;background:var(--pane)}
+.viewer .vrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px}
+.viewer input{flex:1 1 160px;min-width:0;border:1px solid var(--rule);border-bottom-color:var(--muted);border-radius:4px;background:var(--pane);padding:4px 8px;font-size:13px}
+
+/* ---- Frutiger Aero mode ---- */
+html:root.aero{
+  --strip:rgba(255,255,255,.38); --bar:rgba(255,255,255,.58); --editor:rgba(255,255,255,.82); --pane:rgba(236,248,255,.66); --fly:rgba(248,253,255,.94);
+  --hover:rgba(0,150,230,.13); --press:rgba(0,150,230,.22); --ink:#0B2540; --ink-2:#1B3D5E; --muted:#4A6B88; --rule:rgba(255,255,255,.85); --rule-2:rgba(110,170,215,.38);
+  --accent:#0090DD; --accent-ink:#fff; --accent-soft:rgba(0,150,230,.15); --warn-bg:rgba(255,215,90,.38); --warn:#8A5A00; --danger:#C42B1C;
+  --f-ui:"Frutiger","Segoe UI","Myriad Pro",system-ui,sans-serif; --f-display:"Frutiger","Segoe UI Light","Segoe UI",system-ui,sans-serif; --f-edit:Calibri,"Segoe UI",sans-serif;
+  --sky:radial-gradient(ellipse 60% 45% at 85% -8%,rgba(255,255,255,.95),rgba(255,255,255,0) 70%),radial-gradient(ellipse 140% 26% at 25% 64%,rgba(255,255,255,.5),rgba(255,255,255,0) 62%),
+    radial-gradient(ellipse 130% 40% at 70% 118%,#9BE36B 0 42%,#52B930 58%,rgba(82,185,48,0) 60%),radial-gradient(ellipse 120% 34% at 10% 122%,#7ED957 0 44%,#3E9F27 58%,rgba(62,159,39,0) 60%),
+    linear-gradient(#36B4F5 0%,#7FD4FF 38%,#CFF1FF 66%,#EAFBF2 100%);
+  color-scheme:light}
+html.aero body,html.aero body.pip{background:var(--sky);background-attachment:fixed}
+.aero-sky{display:none}
+html.aero .aero-sky{display:block;position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bub{position:absolute;bottom:-140px;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.98) 0 7%,rgba(255,255,255,.45) 16%,rgba(190,238,255,.16) 46%,rgba(255,255,255,.5) 68%,rgba(255,255,255,0) 71%);box-shadow:inset 0 0 14px rgba(255,255,255,.55);animation:aeroRise linear infinite}
+@keyframes aeroRise{0%{transform:translate(0,0)}50%{transform:translate(var(--dx),-60vh)}100%{transform:translate(0,-125vh)}}
+html.aero .strip,html.aero .wrap{position:relative;z-index:1}
+html.aero .strip{backdrop-filter:blur(14px) saturate(1.5);-webkit-backdrop-filter:blur(14px) saturate(1.5);box-shadow:inset 0 -1px 0 rgba(255,255,255,.8)}
+html.aero .card,html.aero #app{border-radius:14px;border:1px solid rgba(255,255,255,.88);box-shadow:0 8px 26px rgba(0,80,150,.22),inset 0 1px 0 #fff;backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5)}
+html.aero body.pip #app{border-radius:0;border:0;box-shadow:none;background:linear-gradient(rgba(255,255,255,.86),rgba(255,255,255,.7))}
+html.aero .abar,html.aero .foot{box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
+html.aero .title{font-weight:300;color:#06406E;text-shadow:0 1px 0 rgba(255,255,255,.9)}
+html.aero .btn{border-radius:999px;border:1px solid #0568A6;color:#fff;text-shadow:0 1px 1px rgba(0,40,90,.45);background:linear-gradient(#7FDBFF 0%,#1AA3EC 48%,#0485D2 52%,#3FB7F5 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 2px 7px rgba(0,90,160,.35)}
+html.aero .btn.std{color:var(--ink);text-shadow:0 1px 0 #fff;border-color:rgba(100,160,205,.85);background:linear-gradient(#FFFFFF 0%,#EEF7FE 48%,#DCEDFA 52%,#F3FAFF 100%)}
+html.aero .ib:hover:not(:disabled),html.aero .tbtn:hover:not(:disabled){background:linear-gradient(rgba(255,255,255,.95),rgba(205,236,255,.8));box-shadow:inset 0 0 0 1px rgba(110,180,230,.6),inset 0 1px 0 #fff}
+html.aero .ib.on{background:linear-gradient(#D9F3FF,#9FDBFF);box-shadow:inset 0 0 0 1px rgba(0,140,220,.45)}
+html.aero .seg,html.aero .course,html.aero .tag{border-radius:999px}
+html.aero .seg button[aria-pressed="true"]{background:linear-gradient(#7FDBFF,#1AA3EC 48%,#0485D2 52%,#3FB7F5);color:#fff}
+html.aero .shot,html.aero .warnbox{border-radius:10px}
+.sndpanel{position:absolute;right:6px;top:40px;z-index:6;background:var(--fly);border:1px solid var(--rule);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.35);max-height:calc(100% - 50px);overflow:auto}
+html.aero .sndpanel{backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);border-radius:14px}
+@media (prefers-reduced-motion:reduce){.bub{display:none}}
+
+/* ---- sound panel (shared) ---- */
+.snd{display:grid;gap:8px;padding:10px 12px;width:min(340px,calc(100vw - 24px))}
+.snd-h{font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
+.snd-list{display:grid;gap:2px}
+.snd-st{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid transparent;background:none;border-radius:8px;padding:6px 8px;color:var(--ink)}
+.snd-st:hover{background:var(--hover)}
+.snd-st.on{border-color:var(--accent);background:var(--accent-soft)}
+.snd-st b{display:block;font-size:13.5px;font-weight:600}
+.snd-st small{display:block;font-size:11.5px;color:var(--muted)}
+.snd-play{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:10px;background:var(--accent);color:var(--accent-ink)}
+.snd-row{display:flex;align-items:center;gap:10px;justify-content:space-between;font-size:13px;flex-wrap:wrap}
+.snd-row input[type=range]{flex:1;min-width:120px;accent-color:var(--accent)}
+.snd-own{display:inline-flex;align-items:center;border:1px solid var(--rule);border-radius:6px;padding:4px 10px;font-size:13px;cursor:pointer;background:var(--bar)}
+.snd-own:hover{background:var(--hover)}
+.snd-links{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:var(--muted)}
+.snd-links a{color:var(--accent)}
+.snd-seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;justify-self:start}
+.snd-seg button{border:0;background:none;padding:4px 10px;font-size:12.5px;color:var(--ink-2)}
+.snd-seg button+button{border-left:1px solid var(--rule)}
+.snd-seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.snd-chk{justify-content:flex-start}
+.snd-note{font-size:12px;color:var(--muted)}
+html.aero .snd-play{background:linear-gradient(#7FDBFF,#1AA3EC 48%,#0485D2 52%,#3FB7F5);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+html.aero .snd-seg,html.aero .snd-own{border-radius:999px}
+.mp-now{display:grid;gap:6px;background:var(--pane);border:1px solid var(--rule);border-radius:10px;padding:10px}
+.mp-title{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mp-seek{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.mp-seek input{flex:1;min-width:0;accent-color:var(--accent)}
+.mp-ctrl{display:flex;align-items:center;justify-content:center;gap:6px}
+.mp-b{width:34px;height:34px;border-radius:50%;border:1px solid var(--rule);background:var(--bar);color:var(--ink);font-size:14px;display:grid;place-items:center;padding:0}
+.mp-b:hover:not(:disabled){background:var(--hover)}
+.mp-b.on{color:var(--accent);border-color:var(--accent)}
+.mp-b.big{width:44px;height:44px;font-size:16px;background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.mp-list{display:grid;gap:1px;max-height:220px;overflow:auto;border-radius:8px}
+.snd.mp-dropping,.mp-dropping .mp-list{outline:2px dashed var(--accent);outline-offset:2px}
+.mp-row{display:flex;align-items:center;border-radius:6px}
+.mp-row:hover,.mp-row.on{background:var(--hover)}
+.mp-play{flex:1;min-width:0;display:flex;align-items:center;gap:8px;border:0;background:none;color:var(--ink);text-align:left;padding:5px 6px;font-size:13px}
+.mp-play span{width:18px;flex:none;font-size:10px;color:var(--accent);text-align:center}
+.mp-play b{flex:1;min-width:0;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mp-row.on .mp-play b{font-weight:700}
+.mp-play small{flex:none;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.mp-x{flex:none;width:26px;height:26px;border:0;background:none;color:var(--muted);border-radius:4px;font-size:16px}
+.mp-x:hover{color:var(--danger);background:var(--hover)}
+.mp-empty{font-size:12.5px;color:var(--muted);border:1px dashed var(--rule);border-radius:8px;padding:14px;text-align:center}
+.mp-link{display:inline-flex;align-items:center;gap:2px}
+.mp-link button{border:0;background:none;color:var(--muted);font-size:13px;padding:0 3px}
+.mp-add{justify-self:start;border:0;background:none;color:var(--accent);font-size:12.5px;padding:0}
+.mp-addlink{display:grid;gap:6px}
+.mp-addlink input{border:1px solid var(--rule);border-radius:6px;background:var(--pane);padding:5px 8px;font-size:13px;min-width:0}
+.mp-addlink button{justify-self:start}
+html.aero .mp-b.big{background:linear-gradient(#7FDBFF,#1AA3EC 48%,#0485D2 52%,#3FB7F5);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 2px 7px rgba(0,90,160,.35);color:#fff}
+html.aero .mp-b{background:linear-gradient(#fff,#e3f2fd);box-shadow:inset 0 1px 0 #fff}
+html.aero .mp-now{border-radius:14px;background:rgba(255,255,255,.6)}
+
+@media (max-height:380px){.syms{display:none}.shots{display:none}}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-plus" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.3" d="M8 2.5v11M2.5 8h11"/></symbol>
+  <symbol id="i-omega" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.3" d="M3 13.5h3v-1.6A4.8 4.8 0 0 1 3.2 7.5 4.8 4.8 0 0 1 8 2.7a4.8 4.8 0 0 1 4.8 4.8 4.8 4.8 0 0 1-2.8 4.4v1.6h3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.3 1.6"/></g></symbol>
+  <symbol id="i-out" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.3" d="M9 2.5h4.5V7M13.5 2.5 7.5 8.5M6.5 3.5h-3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-3"/></symbol>
+  <symbol id="i-shot" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><path d="m1.5 11 3.5-3.5 3 3 2-2 4.5 4"/><circle cx="11" cy="6" r="1.1"/></g></symbol>
+  <symbol id="i-x" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.2" d="m4 4 8 8m0-8-8 8"/></symbol>
+  <symbol id="i-music" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.3"><path d="M6 12.2V3.3l7-1.6v8.9"/><ellipse cx="4.3" cy="12.4" rx="1.8" ry="1.4"/><ellipse cx="11.3" cy="10.8" rx="1.8" ry="1.4"/></g></symbol>
+  <symbol id="i-bubble" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M5.2 6.2a3 3 0 0 1 2.4-2"/></g></symbol>
+  <symbol id="i-float" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2.5" width="13" height="10" rx="1.5"/><rect x="8" y="7" width="5" height="4" rx=".6" fill="currentColor" stroke="none"/></g></symbol>
+</svg>
+
+<div class="aero-sky" id="aeroSky" aria-hidden="true"></div>
+<header class="strip">
+  <img src="icon-192.png" alt="">
+  <h1 class="grow">Floating Notes</h1>
+  <button class="btn" id="popBtn"><svg class="i"><use href="#i-float"/></svg>Pop out on top</button>
+</header>
+
+<div class="wrap">
+  <div class="warnbox" id="msg" hidden></div>
+
+  <section class="card" id="setup">
+    <div class="row"><h2 class="grow">Install Floating Notes</h2><button class="tbtn" id="setupDone">Hide</button></div>
+    <p class="dim" style="margin:0">Install it to get its own icon and window. Your notes, screenshots and music stay on this device. Nobody else can see them.</p>
+    <div class="row" style="flex-wrap:wrap"><button class="btn" id="installBtn" hidden>Install app</button><span class="dim" id="installHow"></span></div>
+  </section>
+
+  <div id="home"><div id="app">
+    <div class="abar">
+      <select id="pick" aria-label="Choose a note"></select>
+      <button class="ib" id="newBtn" title="New note" aria-label="New note"><svg class="i"><use href="#i-plus"/></svg></button>
+      <button class="ib" id="aeroBtn" title="Frutiger Aero mode" aria-label="Frutiger Aero mode" aria-pressed="false"><svg class="i"><use href="#i-bubble"/></svg></button>
+      <button class="ib" id="sndBtn" title="Music and sound effects" aria-label="Music and sound effects" aria-expanded="false"><svg class="i"><use href="#i-music"/></svg></button>
+      <button class="ib" id="shotBtn" title="Add a screenshot (or paste one with Ctrl+V)" aria-label="Add screenshot"><svg class="i"><use href="#i-shot"/></svg></button>
+      <button class="ib" id="symBtn" title="Engineering symbols" aria-label="Show symbols" aria-pressed="false"><svg class="i"><use href="#i-omega"/></svg></button>
+    </div>
+    <div class="head">
+      <input class="title" id="title" placeholder="Untitled" aria-label="Note title">
+      <input class="course" id="course" placeholder="Course" aria-label="Course code">
+    </div>
+    <div class="syms" id="syms" hidden aria-label="Insert symbol"></div>
+    <textarea class="body" id="body" spellcheck="true" placeholder="Type your notes. Paste screenshots with Ctrl+V (take one with Win+Shift+S). The clock button stamps the time." aria-label="Note text"></textarea>
+    <div class="foot">
+      <button class="ib" id="stampBtn" title="Insert the time" aria-label="Insert the time"><svg class="i"><use href="#i-clock"/></svg></button>
+      <button class="btn" id="copyBtn" title="Copy this note as text">Copy note</button>
+      <button class="tbtn" id="saveBtn" title="Save this note as a text file">Save</button>
+      <button class="btn std" id="sendBtn" hidden title="Copy this note for the Engineering Notebook">Send to notebook</button>
+      <button class="tbtn" id="openBtn" hidden title="Open your notebook in its own window"><svg class="i"><use href="#i-out"/></svg>Notebook</button>
+      <span class="status" id="status"></span>
+    </div>
+    <div class="shots" id="shots" hidden></div>
+    <textarea id="copybox" readonly hidden aria-label="Text to copy" style="height:70px;margin:0 6px 6px;font-family:var(--f-edit);font-size:12px"></textarea>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="viewer" id="viewer" hidden></div>
+    <div class="sndpanel" id="sndPanel" hidden></div>
+    <input type="file" id="shotIn" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+  </div></div>
+
+  <p class="dim ver" id="ver">Floating Notes v1.0 · notes stay on this device</p>
+  <div class="away" id="away" hidden>Your notes are in the floating window. Close it to bring them back here.</div>
+
+  <section class="card">
+    <div class="row"><h2 class="grow">All notes on this device</h2><button class="tbtn" id="copyAll">Copy all</button><button class="tbtn" id="saveAll">Save all</button></div>
+    <ul class="list" id="list"></ul>
+    <p class="dim" style="margin:0">Notes live in this browser. To move them to another device, use <b>Save all</b> and keep the file somewhere safe.</p>
+    <details class="settings">
+      <summary>Settings</summary>
+      <label class="chk"><input type="checkbox" id="nbOn"> Show Engineering Notebook buttons</label>
+      <input type="url" id="nbUrl" class="nb-url" placeholder="Your notebook link (optional), https://…" aria-label="Notebook link">
+      <p class="dim" style="margin:0">For people who use the Engineering Notebook in Claude: adds <b>Send to notebook</b>, which copies notes with their screenshots for <b>File → Import</b>.</p>
+    </details>
+  </section>
+</div>
+
+<script>
+(function(){
+const KEY="floating-notes-v1", SETUP_KEY="floating-notes-setup";
+const VERSION="1.0";
+const nbUrl=()=>(ls.get("floating-notes-nb-url")||"").trim();
+// Cache element references once: after pop-out they live in the floating window's document.
+const els={};document.querySelectorAll("[id]").forEach(el=>els[el.id]=el);
+const $=id=>els[id];
+const app=$("app"), home=$("home");
+let notes=[], cur=null, pip=null, saveT=null, delId=null;
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}}};
+
+function load(){try{notes=JSON.parse(ls.get(KEY)||"[]")}catch(e){notes=[]}
+  if(!notes.length)notes=[blank()]; cur=notes.slice().sort((a,b)=>b.updatedAt-a.updatedAt)[0].id}
+function blank(){const t=Date.now();return{id:uid(),title:"",course:"",body:"",createdAt:t,updatedAt:t}}
+function save(){$("status").textContent=ls.set(KEY,JSON.stringify(notes))?statusText():"Not saved: storage blocked"}
+const note=()=>notes.find(n=>n.id===cur);
+const label=n=>(n.course?n.course+" · ":"")+(n.title||"Untitled");
+const words=s=>(s||"").trim().split(/\s+/).filter(Boolean).length;
+const statusText=()=>{const k=(note().shots||[]).length;return words(note().body)+" words"+(k?` · ${k} screenshot${k===1?"":"s"}`:"")+" · Saved"};
+
+function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2200)}
+function render(){
+  const n=note();const sorted=notes.slice().sort((a,b)=>b.updatedAt-a.updatedAt);
+  $("pick").innerHTML=sorted.map(x=>`<option value="${x.id}" ${x.id===cur?"selected":""}>${esc(label(x))}</option>`).join("");
+  if($("title").value!==n.title)$("title").value=n.title;
+  if($("course").value!==n.course)$("course").value=n.course;
+  if($("body").value!==n.body)$("body").value=n.body;
+  $("status").textContent=statusText();renderShots();
+  $("list").innerHTML=sorted.map(x=>`<li><span class="t">${esc(x.title||"Untitled")}</span>${x.course?`<span class="tag">${esc(x.course)}</span>`:""}<span class="dim">${new Date(x.updatedAt).toLocaleDateString(undefined,{month:"short",day:"numeric"})}</span>
+    <button class="tbtn" data-open="${x.id}">Open</button>
+    ${delId===x.id?`<button class="tbtn danger" data-delyes="${x.id}">Delete</button><button class="tbtn" data-delno="1">Cancel</button>`:`<button class="tbtn" data-del="${x.id}">Delete</button>`}</li>`).join("");
+}
+function changed(){AeroAudio.typingTick();const n=note();n.title=$("title").value;n.course=$("course").value.toUpperCase();n.body=$("body").value;n.updatedAt=Date.now();
+  $("status").textContent=words(n.body)+" words · Saving…";clearTimeout(saveT);saveT=setTimeout(()=>{save();render()},500)}
+["title","course","body"].forEach(id=>$(id).addEventListener("input",changed));
+
+/* symbols & time stamp */
+const SYMS=["σ","τ","ε","δ","Δ","θ","ω","α","β","λ","µ","ν","ρ","π","φ","Ω","Σ","∫","∂","√","∞","≈","≠","≤","≥","±","°","²","³","₀","₁","₂","×","·","→","⇒"];
+$("syms").innerHTML=SYMS.map(s=>`<button type="button" data-sym="${s}">${s}</button>`).join("");
+function insert(t){const b=$("body");const s=b.selectionStart,e=b.selectionEnd;b.setRangeText(t,s,e,"end");b.focus();changed()}
+$("syms").addEventListener("mousedown",e=>{if(e.target.closest("button"))e.preventDefault()});
+$("syms").addEventListener("click",e=>{const b=e.target.closest("[data-sym]");if(b)insert(b.dataset.sym)});
+$("symBtn").addEventListener("click",()=>{const show=$("syms").hidden;$("syms").hidden=!show;$("symBtn").classList.toggle("on",show);$("symBtn").setAttribute("aria-pressed",String(show));ls.set(KEY+"-syms",show?"1":"")});
+if(ls.get(KEY+"-syms")){$("syms").hidden=false;$("symBtn").classList.add("on");$("symBtn").setAttribute("aria-pressed","true")}
+$("stampBtn").addEventListener("mousedown",e=>e.preventDefault());
+$("stampBtn").addEventListener("click",()=>insert("["+new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})+"] "));
+
+/* screenshots: images live in IndexedDB (too big for localStorage); notes keep {id,k,caption} */
+const idb=(()=>{let p=null;const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open("floating-notes",1);r.onupgradeneeded=()=>r.result.createObjectStore("shots");r.onsuccess=()=>res(r.result);r.onerror=()=>{p=null;rej(r.error)}}));
+  const tx=(mode,fn)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction("shots",mode);const st=t.objectStore("shots");const r=fn(st);t.oncomplete=()=>res(r&&r.result);t.onerror=()=>rej(t.error)}));
+  return{put:(id,blob)=>tx("readwrite",st=>st.put(blob,id)),get:id=>tx("readonly",st=>st.get(id)).catch(()=>null),del:id=>tx("readwrite",st=>st.delete(id)).catch(()=>{})};})();
+const urls={};
+async function shotURL(id){if(urls[id])return urls[id];const b=await idb.get(id);if(!b)return"";return urls[id]=URL.createObjectURL(b)}
+const toDataURL=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(blob)});
+const IMG_OK=["image/png","image/jpeg","image/webp","image/gif"];
+async function shrink(file){
+  if(file.size<=1200000&&file.type!=="image/gif")return file;
+  try{const bmp=await createImageBitmap(file);const sc=Math.min(1,1800/Math.max(bmp.width,bmp.height));
+    const c=document.createElement("canvas");c.width=Math.round(bmp.width*sc);c.height=Math.round(bmp.height*sc);
+    const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(bmp,0,0,c.width,c.height);
+    return await new Promise(r=>c.toBlob(b=>r(b||file),"image/jpeg",.88))}catch(e){return file}
+}
+async function addShots(files,atCaret){
+  const n=note();const imgs=[...files].filter(f=>IMG_OK.includes(f.type));
+  if(!imgs.length){toast("Only PNG, JPEG, WebP or GIF images can be added.");return}
+  const body=$("body");const caret=atCaret&&app.ownerDocument.activeElement===body?[body.selectionStart,body.selectionEnd]:null;
+  const marks=[];n.shots=n.shots||[];
+  for(const f of imgs){
+    try{const blob=await shrink(f);const id="s"+uid();await idb.put(id,blob);
+      n.shotSeq=Math.max(n.shotSeq||0,...n.shots.map(x=>x.k),0)+1;n.shots.push({id,k:n.shotSeq,caption:"",at:Date.now()});marks.push("[Screenshot "+n.shotSeq+"]")}
+    catch(e){toast("That screenshot couldn't be saved. Your browser's storage may be full.")}
+  }
+  if(!marks.length)return;
+  if(caret){body.setRangeText(marks.join(" "),caret[0],caret[1],"end");n.body=body.value}
+  n.updatedAt=Date.now();save();render();sfx("shutter");toast(marks.length>1?`Added ${marks.length} screenshots`:"Screenshot added");
+}
+async function renderShots(){
+  const n=note();const el=$("shots");const list=n.shots||[];
+  el.hidden=!list.length;if(!list.length){el.innerHTML="";return}
+  const html=[];for(const sh of list)html.push(`<button class="shot" data-shot="${sh.k}" title="${esc(sh.caption||"Screenshot "+sh.k)}"><img src="${esc(await shotURL(sh.id))}" alt="${esc(sh.caption||"Screenshot "+sh.k)}"><span>${sh.k}</span></button>`);
+  if(note()===n)el.innerHTML=html.join("");
+}
+let viewK=null,viewDel=false,lastCaret=null;
+async function openViewer(k){
+  const n=note();const sh=(n.shots||[]).find(x=>x.k===Number(k));const v=$("viewer");if(!sh){v.hidden=true;viewK=null;return}
+  viewK=sh.k;
+  v.innerHTML=`<div class="vhead"><span class="grow">Screenshot ${sh.k}</span><button class="ib" data-v="close" aria-label="Close">${'<svg class="i"><use href="#i-x"/></svg>'}</button></div>
+    <img src="${esc(await shotURL(sh.id))}" alt="${esc(sh.caption||"Screenshot "+sh.k)}">
+    <div class="vrow"><input data-v="cap" value="${esc(sh.caption||"")}" placeholder="Caption, like “slide 14 free-body diagram”" aria-label="Caption"></div>
+    <div class="vrow">${viewDel?`<span class="dim grow">Delete this screenshot?</span><button class="btn" style="background:#C42B1C;color:#fff" data-v="delyes">Delete</button><button class="btn std" data-v="delno">Cancel</button>`
+      :`<button class="tbtn danger" data-v="del">Delete</button><span class="grow"></span><button class="btn std" data-v="ref">Insert reference</button><button class="btn" data-v="close">Done</button>`}</div>`;
+  v.hidden=false;
+}
+$("viewer").addEventListener("input",e=>{if(e.target.dataset.v!=="cap")return;const n=note();const sh=(n.shots||[]).find(x=>x.k===viewK);if(!sh)return;sh.caption=e.target.value;n.updatedAt=Date.now();clearTimeout(saveT);saveT=setTimeout(()=>{save();render()},500)});
+$("viewer").addEventListener("click",e=>{
+  const b=e.target.closest("[data-v]");if(!b||b.tagName==="INPUT")return;const n=note();const sh=(n.shots||[]).find(x=>x.k===viewK);
+  const close=()=>{$("viewer").hidden=true;viewK=null;viewDel=false;renderShots()};
+  switch(b.dataset.v){
+    case"close":close();break;
+    case"del":viewDel=true;openViewer(viewK);break;
+    case"delno":viewDel=false;openViewer(viewK);break;
+    case"delyes":if(sh){idb.del(sh.id);if(urls[sh.id]){URL.revokeObjectURL(urls[sh.id]);delete urls[sh.id]}n.shots=n.shots.filter(x=>x!==sh);n.body=n.body.split("[Screenshot "+sh.k+"]").join("");n.updatedAt=Date.now();save()}close();render();break;
+    case"ref":{close();const body=$("body");const pos=lastCaret??body.value.length;body.focus();body.setSelectionRange(pos,pos);insert("[Screenshot "+sh.k+"]");break}
+  }
+});
+$("shots").addEventListener("click",e=>{const b=e.target.closest("[data-shot]");if(b){viewDel=false;openViewer(b.dataset.shot)}});
+$("body").addEventListener("blur",()=>{lastCaret=$("body").selectionEnd});
+$("shotBtn").addEventListener("click",()=>$("shotIn").click());
+$("shotIn").addEventListener("change",e=>{const f=[...e.target.files];e.target.value="";if(f.length)addShots(f,false)});
+/* paste and drop work in the page and in the floating window, because they listen on the editor itself */
+app.addEventListener("paste",e=>{const files=[...(e.clipboardData&&e.clipboardData.files||[])].filter(f=>IMG_OK.includes(f.type));if(!files.length)return;e.preventDefault();addShots(files,true)});
+app.addEventListener("dragover",e=>{if([...e.dataTransfer.types].includes("Files")){e.preventDefault();app.classList.add("dropping")}});
+app.addEventListener("dragleave",e=>{if(!app.contains(e.relatedTarget))app.classList.remove("dropping")});
+app.addEventListener("drop",e=>{app.classList.remove("dropping");const f=[...e.dataTransfer.files];if(!f.length)return;e.preventDefault();addShots(f,false)});
+app.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("viewer").hidden){$("viewer").hidden=true;viewK=null}});
+
+/* export format the notebook's Import understands */
+async function pack(list){
+  const out=[];
+  for(const n of list){
+    let t=`%%ENGNOTE v1\ntitle: ${n.title||"Untitled note"}\ncourse: ${n.course||""}\ndate: ${new Date(n.createdAt).toISOString()}\n---\n${n.body.replace(/\s+$/,"")}`;
+    for(const sh of n.shots||[]){const blob=await idb.get(sh.id);if(blob)t+=`\n%%SHOT ${JSON.stringify({k:sh.k,caption:sh.caption||""})} ${await toDataURL(blob)}`}
+    out.push(t);
+  }
+  return out.join("\n\n");
+}
+async function copy(text,okMsg){
+  const win=app.ownerDocument.defaultView;
+  try{await win.navigator.clipboard.writeText(text);$("copybox").hidden=true;toast(okMsg)}
+  catch(e){const box=$("copybox");box.value=text;box.hidden=false;box.focus();box.select();
+    let ok=false;try{ok=app.ownerDocument.execCommand("copy")}catch(_){}
+    toast(ok?okMsg:"Press Ctrl+C to copy.")}
+}
+$("sendBtn").addEventListener("click",async()=>{const n=note();sfx("send");copy(await pack([n]),"Copied"+((n.shots||[]).length?" with screenshots":"")+". In the notebook choose File → Import and paste.")});
+$("openBtn").addEventListener("click",()=>{
+  const u=nbUrl();if(!/^https:\/\//.test(u)){toast("Add your notebook link in Settings first.");return}
+  const w=Math.min(1320,screen.availWidth-80),h=Math.min(900,screen.availHeight-80);
+  const nb=window.open(u,"engnotebook",`popup=yes,width=${w},height=${h},left=40,top=30`);
+  if(nb)nb.focus();else window.open(u,"_blank");
+});
+/* plain-text copy and save, for everyone */
+function plain(list){return list.map(n=>{const head=[n.title||"Untitled",[n.course,new Date(n.createdAt).toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"})].filter(Boolean).join(" · ")].join("\n");
+  return head+"\n\n"+(n.body||"").replace(/\s+$/,"")+((n.shots||[]).length?`\n\n(${n.shots.length} screenshot${n.shots.length===1?"":"s"} saved in Floating Notes)`:"")}).join("\n\n---\n\n")}
+const usable=()=>notes.filter(n=>n.body.trim()||n.title.trim()||(n.shots||[]).length);
+function saveText(name,text){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:"text/plain;charset=utf-8"}));a.download=name.replace(/[\\/:*?"<>|]+/g,"").trim().slice(0,80)+".txt";document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),3000)}
+$("copyBtn").addEventListener("click",()=>{sfx("send");copy(plain([note()]),"Copied. Paste it anywhere.")});
+$("saveBtn").addEventListener("click",()=>{const n=note();saveText((n.course?n.course+" ":"")+(n.title||"note"),plain([n]));toast("Saved as a text file")});
+$("copyAll").addEventListener("click",()=>{const l=usable();copy(plain(l),`Copied ${l.length} note${l.length===1?"":"s"}.`)});
+$("saveAll").addEventListener("click",()=>{const l=usable();saveText("Floating Notes "+new Date().toISOString().slice(0,10),plain(l));toast(`Saved ${l.length} note${l.length===1?"":"s"}`)});
+function renderNb(){const on=!!ls.get("floating-notes-nb-on");$("sendBtn").hidden=!on;$("openBtn").hidden=!on||!nbUrl();$("nbOn").checked=on;if(document.activeElement!==$("nbUrl"))$("nbUrl").value=nbUrl()}
+$("nbOn").addEventListener("change",e=>{ls.set("floating-notes-nb-on",e.target.checked?"1":"");renderNb()});
+$("nbUrl").addEventListener("input",e=>{ls.set("floating-notes-nb-url",e.target.value);renderNb()});
+
+$("pick").addEventListener("change",e=>{cur=e.target.value;render()});
+$("newBtn").addEventListener("click",()=>{sfx("newnote");const n=blank();notes.push(n);cur=n.id;save();render();$("title").focus()});
+$("list").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.open){cur=b.dataset.open;delId=null;render();if(!pip)$("body").focus()}
+  else if(b.dataset.del){delId=b.dataset.del;render()}
+  else if(b.dataset.delno){delId=null;render()}
+  else if(b.dataset.delyes){sfx("delete");const gone=notes.find(n=>n.id===b.dataset.delyes);for(const sh of (gone&&gone.shots)||[])idb.del(sh.id);notes=notes.filter(n=>n.id!==b.dataset.delyes);if(!notes.length)notes=[blank()];if(!note())cur=notes[0].id;delId=null;save();render()}
+});
+
+/* install as an app (Chrome / Edge) */
+let installEvt=null;
+const standalone=()=>matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: window-controls-overlay)").matches;
+function renderSetup(){
+  $("setup").hidden=standalone()||ls.get(SETUP_KEY)==="done";
+  $("installBtn").hidden=!installEvt;
+  const chromium=!!(navigator.userAgentData&&navigator.userAgentData.brands&&navigator.userAgentData.brands.some(b=>/Chrom|Edge/i.test(b.brand)));
+  $("installHow").textContent=installEvt?"":chromium?"Click the install icon at the right end of the address bar, or open the browser menu and choose Install.":"Open this page in Chrome or Edge on a computer to install it. The always-on-top pop-out needs one of those browsers.";
+}
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;renderSetup()});
+addEventListener("appinstalled",()=>{installEvt=null;toast("Installed. Open Floating Notes from your apps or desktop.");renderSetup()});
+$("installBtn").addEventListener("click",async()=>{if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice}catch(e){}installEvt=null;renderSetup()});
+$("setupDone").addEventListener("click",()=>{ls.set(SETUP_KEY,"done");renderSetup()});
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"||location.hostname==="127.0.0.1"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+
+/* pop out */
+function showMsg(t){$("msg").innerHTML=t;$("msg").hidden=false}
+$("popBtn").addEventListener("click",async()=>{
+  if(pip){pip.close();return}
+  if(!("documentPictureInPicture" in window)){
+    showMsg("This browser can't make an always-on-top window. Open this file in <b>Google Chrome</b> or <b>Microsoft Edge</b>.");return}
+  try{pip=await documentPictureInPicture.requestWindow({width:400,height:560})}
+  catch(e){showMsg("The floating window didn't open. Click <b>Pop out on top</b> again.");return}
+  for(const ss of document.styleSheets){
+    try{const s=pip.document.createElement("style");s.textContent=[...ss.cssRules].map(r=>r.cssText).join("\n");pip.document.head.append(s)}
+    catch(e){if(ss.href){const l=pip.document.createElement("link");l.rel="stylesheet";l.href=ss.href;pip.document.head.append(l)}}
+  }
+  pip.document.body.prepend(document.querySelector("svg").cloneNode(true));
+  pip.document.title="Notes";pip.document.body.className="pip";pip.document.documentElement.classList.toggle("aero",document.documentElement.classList.contains("aero"));sfx("open");
+  pip.document.body.append(app);
+  $("away").hidden=false;$("popBtn").lastChild.textContent="Bring notes back";$("msg").hidden=true;
+  pip.addEventListener("pagehide",()=>{home.append(app);pip=null;$("away").hidden=true;$("popBtn").lastChild.textContent="Pop out on top";save();render()});
+  setTimeout(()=>$("body").focus(),50);
+});
+
+window.addEventListener("storage",e=>{if(e.key===KEY){load();render()}});
+window.addEventListener("beforeunload",save);
+
+/* =================== Aero Audio: original sound effects (Web Audio) + your own music player =================== */
+const AeroAudio=(()=>{
+  const AC=window.AudioContext||window.webkitAudioContext;
+  const LS="aero-audio-v1";
+  const st={sfxMode:"aero",sfxVol:.55,musVol:.7,typing:false,shuffle:false,repeat:"all",links:[]};
+  try{Object.assign(st,JSON.parse(localStorage.getItem(LS)||"{}"))}catch(e){}
+  const persist=()=>{try{localStorage.setItem(LS,JSON.stringify(st))}catch(e){}};
+  let ctx=null,out,sfxBus,rev,revSend,noiseBuf;
+  function init(){
+    if(ctx)return ctx;if(!AC)return null;
+    ctx=new AC();
+    const comp=ctx.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=4;
+    out=ctx.createGain();out.gain.value=.9;comp.connect(out);out.connect(ctx.destination);
+    sfxBus=ctx.createGain();sfxBus.gain.value=st.sfxVol;sfxBus.connect(comp);
+    rev=ctx.createConvolver();const len=ctx.sampleRate*2.4,ir=ctx.createBuffer(2,len,ctx.sampleRate);
+    for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6)}
+    rev.buffer=ir;revSend=ctx.createGain();revSend.gain.value=.32;rev.connect(revSend);revSend.connect(comp);
+    noiseBuf=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate);const nd=noiseBuf.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+    return ctx;
+  }
+  const wake=()=>{if(!init())return false;if(ctx.state==="suspended")ctx.resume();return true};
+  const mtof=m=>440*Math.pow(2,(m-69)/12);
+
+  /* ---------- voices ---------- */
+  function env(g,t,a,peak,d,sus,r,len){g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+a);g.gain.setTargetAtTime(peak*sus,t+a,d/3);g.gain.setTargetAtTime(0,t+len,r/4)}
+  function osc(type,f,t,len,peak,dest,o={}){
+    const s=ctx.createOscillator(),g=ctx.createGain();s.type=type;s.frequency.setValueAtTime(f,t);
+    if(o.glide)s.frequency.exponentialRampToValueAtTime(o.glide,t+(o.glideT||len));
+    if(o.detune)s.detune.value=o.detune;
+    env(g,t,o.a??.004,peak,o.d??.2,o.s??0,o.r??.15,len);
+    let node=s;if(o.lp){const f2=ctx.createBiquadFilter();f2.type="lowpass";f2.frequency.value=o.lp;f2.Q.value=o.q??.7;s.connect(f2);node=f2}
+    node.connect(g);g.connect(dest);if(o.wet)g.connect(revFor(dest,o.wet));
+    s.start(t);s.stop(t+len+(o.r??.15)+.1);return s;
+  }
+  const wets=new Map();
+  function revFor(dest,amt){const k=amt;if(!wets.has(k)){const g=ctx.createGain();g.gain.value=amt;g.connect(rev);wets.set(k,g)}return wets.get(k)}
+  function noise(t,len,peak,dest,type,freq,q,o={}){
+    const s=ctx.createBufferSource();s.buffer=noiseBuf;const f=ctx.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q||.7;
+    const g=ctx.createGain();env(g,t,o.a??.001,peak,o.d??len,o.s??0,o.r??.05,len);s.connect(f);f.connect(g);g.connect(dest);if(o.wet)g.connect(revFor(dest,o.wet));
+    s.start(t,Math.random()*.5);s.stop(t+len+.3);
+  }
+  function bell(m,t,vel,dest,wet=.5){const f=mtof(m);osc("sine",f,t,.05,.12*vel,dest,{a:.002,d:1.4,s:0,r:1.2,wet});osc("sine",f*2.76,t,.04,.04*vel,dest,{a:.002,d:.5,s:0,r:.4,wet});osc("sine",f*5.4,t,.02,.015*vel,dest,{a:.001,d:.2,s:0,r:.2})}
+  function pad(ms,t,len,vel,dest,bright=1400){for(const m of ms)for(const dt of[-9,8])osc("sawtooth",mtof(m),t,len,.018*vel,dest,{a:.7,d:.8,s:.85,r:1.4,detune:dt,lp:bright,wet:.45})}
+
+  /* ---------- sound effects (all original) ---------- */
+  const SFX={
+    click:t=>osc("sine",1250,t,.02,.18,sfxBus,{a:.001,d:.05,s:0,r:.04,glide:900}),
+    tick:t=>osc("triangle",2200,t,.005,.035,sfxBus,{a:.001,d:.015,s:0,r:.01}),
+    open:t=>{osc("triangle",mtof(88),t,.05,.08,sfxBus,{d:.25,s:0,r:.2,wet:.5});osc("triangle",mtof(95),t+.05,.05,.08,sfxBus,{d:.3,s:0,r:.25,wet:.5});noise(t,.18,.05,sfxBus,"bandpass",3500,.6,{a:.08,d:.12})},
+    close:t=>{osc("triangle",mtof(93),t,.04,.07,sfxBus,{d:.2,s:0,r:.15,wet:.4});osc("triangle",mtof(86),t+.05,.04,.07,sfxBus,{d:.25,s:0,r:.2,wet:.4})},
+    sparkle:t=>{[84,88,91,96,100].forEach((m,i)=>bell(m,t+i*.045,.9,sfxBus,.6))},
+    pop:t=>osc("sine",320,t,.03,.22,sfxBus,{a:.001,d:.06,s:0,r:.05,glide:1100,glideT:.05}),
+    levelup:t=>{[72,76,79,84,88].forEach((m,i)=>osc("square",mtof(m),t+i*.06,.05,.1,sfxBus,{a:.002,d:.06,s:.6,r:.04,lp:5000}));[84,88,91].forEach(m=>osc("square",mtof(m),t+.33,.25,.07,sfxBus,{a:.002,d:.2,s:.5,r:.25,lp:4000,wet:.3}))},
+    shutter:t=>{noise(t,.025,.3,sfxBus,"highpass",2500,.7,{d:.03});noise(t+.07,.03,.25,sfxBus,"bandpass",1800,.9,{d:.04})},
+    delete:t=>{[91,86,81,74].forEach((m,i)=>osc("sine",mtof(m),t+i*.05,.04,.08,sfxBus,{d:.18,s:0,r:.15,wet:.4}))},
+    error:t=>{osc("square",150,t,.09,.1,sfxBus,{a:.002,d:.1,s:.8,r:.04,lp:1200});osc("square",150,t+.14,.09,.1,sfxBus,{a:.002,d:.1,s:.8,r:.04,lp:1200})},
+    newnote:t=>{osc("square",220,t,.16,.04,sfxBus,{a:.005,d:.2,s:.6,r:.08,glide:880,glideT:.16,lp:3500});setTimeout(()=>play("sparkle"),150)},
+    swell:t=>{pad([65,69,72,76,79],t,1.4,1.4,sfxBus,2600);[96,100,103,108].forEach((m,i)=>bell(m,t+.5+i*.09,.8,sfxBus,.7))},
+    send:t=>{osc("sine",mtof(79),t,.05,.1,sfxBus,{d:.2,s:0,r:.2,wet:.5,glide:mtof(91),glideT:.12});setTimeout(()=>play("pop"),140)}
+  };
+  function sfxOn(){return st.sfxMode==="always"||(st.sfxMode==="aero"&&document.documentElement.classList.contains("aero"))}
+  function play(name){if(!sfxOn()||!SFX[name])return;if(!wake())return;SFX[name](ctx.currentTime+.01)}
+  function typingTick(){if(st.typing)play("tick")}
+
+  /* ---------- music library: your own MP3/WAV files, kept in this browser (IndexedDB) ---------- */
+  const DB="aero-music";let dbp=null;
+  const db=()=>dbp||(dbp=new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore("tracks",{keyPath:"id"});r.onsuccess=()=>res(r.result);r.onerror=()=>{dbp=null;rej(r.error)}}));
+  const tx=(mode,fn)=>db().then(d=>new Promise((res,rej)=>{const t=d.transaction("tracks",mode),s=t.objectStore("tracks");const r=fn(s);t.oncomplete=()=>res(r&&r.result);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)}));
+  let tracks=[],loaded=false,curId=null,storeErr="";
+  const audio=new Audio();audio.preload="metadata";
+  let curUrl=null,order=[],durations={};
+  const AUDIO_RE=/\.(mp3|wav|m4a|aac|ogg|oga|opus|flac|webm)$/i;
+  async function loadLib(){
+    try{const all=await tx("readonly",s=>s.getAll());tracks=(all||[]).sort((a,b)=>a.order-b.order).map(t=>({id:t.id,name:t.name,order:t.order,size:t.size,dur:t.dur||0}))}catch(e){storeErr="Your library couldn't be opened in this browser. Files you add will play but won't be kept."}
+    loaded=true;emit();
+  }
+  async function addFiles(files){
+    const list=[...files].filter(f=>/^audio\//.test(f.type)||AUDIO_RE.test(f.name));
+    if(!list.length)return{added:0,skipped:files.length};
+    let added=0,base=tracks.length?Math.max(...tracks.map(t=>t.order))+1:0;
+    for(const f of list){
+      const t={id:"t"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:f.name.replace(/\.[^.]+$/,"").replace(/[_]+/g," "),order:base++,size:f.size,dur:0};
+      const dur=await probe(f).catch(()=>0);t.dur=dur;
+      try{await tx("readwrite",s=>s.put({...t,blob:f,type:f.type||"audio/mpeg"}))}catch(e){t.mem=f;storeErr="Some files are too big to keep in this browser. They'll play until you close the page."}
+      if(!t.mem)delete t.mem;tracks.push(t);added++;emit();
+    }
+    return{added,skipped:files.length-list.length};
+  }
+  function probe(blob){return new Promise((res,rej)=>{const a=new Audio(),u=URL.createObjectURL(blob);a.preload="metadata";a.onloadedmetadata=()=>{const d=a.duration;URL.revokeObjectURL(u);res(isFinite(d)?d:0)};a.onerror=()=>{URL.revokeObjectURL(u);rej()};a.src=u})}
+  async function blobOf(t){if(t.mem)return t.mem;const r=await tx("readonly",s=>s.get(t.id));return r&&r.blob}
+  async function playTrack(id){
+    const t=tracks.find(x=>x.id===id);if(!t)return;
+    const b=await blobOf(t).catch(()=>null);if(!b){storeErr="That file is no longer in your library. Add it again.";emit();return}
+    if(curUrl)URL.revokeObjectURL(curUrl);curUrl=URL.createObjectURL(b);
+    curId=id;audio.src=curUrl;audio.volume=st.musVol;
+    try{await audio.play()}catch(e){}
+    mediaSession(t);emit();
+  }
+  function seq(){const ids=tracks.map(t=>t.id);if(!st.shuffle)return ids;if(order.length!==ids.length||!order.every(i=>ids.includes(i))){order=[...ids];for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}}return order}
+  function step(dir){const ids=seq();if(!ids.length)return;let i=ids.indexOf(curId);i=i<0?0:i+dir;
+    if(i>=ids.length){if(st.repeat==="all")i=0;else{audio.pause();emit();return}}if(i<0)i=ids.length-1;playTrack(ids[i])}
+  function toggle(){if(!curId){const ids=seq();if(ids.length)playTrack(ids[0]);return}if(audio.paused)audio.play().catch(()=>{});else audio.pause()}
+  async function remove(id){const t=tracks.find(x=>x.id===id);if(!t)return;if(id===curId){audio.pause();audio.removeAttribute("src");curId=null}
+    tracks=tracks.filter(x=>x.id!==id);try{await tx("readwrite",s=>s.delete(id))}catch(e){}emit()}
+  audio.addEventListener("ended",()=>{if(st.repeat==="one"){audio.currentTime=0;audio.play().catch(()=>{})}else step(1)});
+  for(const ev of["play","pause"])audio.addEventListener(ev,()=>emit());
+  audio.addEventListener("timeupdate",()=>paintTime());
+  audio.addEventListener("loadedmetadata",()=>{const t=tracks.find(x=>x.id===curId);if(t&&!t.dur&&isFinite(audio.duration)){t.dur=audio.duration}paintTime()});
+  function mediaSession(t){try{if(!("mediaSession"in navigator))return;navigator.mediaSession.metadata=new MediaMetadata({title:t.name,artist:"Your library"});
+    navigator.mediaSession.setActionHandler("play",()=>audio.play());navigator.mediaSession.setActionHandler("pause",()=>audio.pause());
+    navigator.mediaSession.setActionHandler("nexttrack",()=>step(1));navigator.mediaSession.setActionHandler("previoustrack",()=>{if(audio.currentTime>3)audio.currentTime=0;else step(-1)})}catch(e){}}
+
+  /* ---------- panel UI (shared by both apps) ---------- */
+  const listeners=new Set();function emit(){for(const f of listeners)f()}
+  const timeFmt=s=>{if(!isFinite(s)||s<0)s=0;const m=Math.floor(s/60);return m+":"+String(Math.floor(s%60)).padStart(2,"0")};
+  const paints=new Set();function paintTime(){for(const f of paints)f()}
+  const FIND=[["m-flo on YouTube","https://www.youtube.com/results?search_query=m-flo"],["m-flo on Spotify","https://open.spotify.com/search/m-flo"],["2000s K-pop","https://www.youtube.com/results?search_query=2000s+kpop+playlist"],["Frutiger Aero music","https://www.youtube.com/results?search_query=frutiger+aero+music+playlist"],["Acid jazz game OSTs","https://www.youtube.com/results?search_query=acid+jazz+video+game+soundtrack"]];
+  function mountPanel(el){
+    const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+    let msg="",addingLink=false;
+    if(!loaded)loadLib();
+    function render(){
+      const t=tracks.find(x=>x.id===curId);const playing=!!t&&!audio.paused;
+      el.innerHTML=`<div class="snd">
+        <div class="snd-h">Music</div>
+        <div class="mp-now"><div class="mp-title">${t?esc(t.name):tracks.length?"Pick a song, or press play":"Add songs to start"}</div>
+          <div class="mp-seek"><span data-cur>0:00</span><input type="range" min="0" max="1000" value="0" data-seek aria-label="Seek" ${t?"":"disabled"}><span data-dur>${t?timeFmt(t.dur):"0:00"}</span></div>
+          <div class="mp-ctrl">
+            <button class="mp-b ${st.shuffle?"on":""}" data-mp="shuffle" title="Shuffle" aria-pressed="${st.shuffle}">⤨</button>
+            <button class="mp-b" data-mp="prev" title="Previous" aria-label="Previous">⏮</button>
+            <button class="mp-b big" data-mp="toggle" title="${playing?"Pause":"Play"}" aria-label="${playing?"Pause":"Play"}" ${tracks.length?"":"disabled"}>${playing?"❚❚":"▶"}</button>
+            <button class="mp-b" data-mp="next" title="Next" aria-label="Next">⏭</button>
+            <button class="mp-b ${st.repeat!=="off"?"on":""}" data-mp="repeat" title="Repeat: ${st.repeat==="one"?"this song":st.repeat==="all"?"all songs":"off"}" aria-label="Repeat">${st.repeat==="one"?"↻1":"↻"}</button>
+          </div>
+          <div class="snd-row"><span>Volume</span><input type="range" min="0" max="1" step="0.02" value="${st.musVol}" data-vol="mus" aria-label="Music volume"></div>
+        </div>
+        <div class="snd-row"><span class="snd-h" style="margin:0">Your library · ${tracks.length}</span><label class="snd-own">Add MP3 / WAV…<input type="file" accept="audio/*,.mp3,.wav,.m4a,.flac,.ogg" multiple hidden data-own></label></div>
+        <div class="mp-list" data-drop>${tracks.length?tracks.map(x=>`<div class="mp-row ${x.id===curId?"on":""}"><button class="mp-play" data-play="${x.id}" title="Play"><span>${x.id===curId&&playing?"❚❚":"▶"}</span><b>${esc(x.name)}</b><small>${x.dur?timeFmt(x.dur):""}</small></button><button class="mp-x" data-rm="${x.id}" title="Remove from library" aria-label="Remove ${esc(x.name)}">×</button></div>`).join(""):`<div class="mp-empty">Drop music files here, or use Add. They stay in this browser for next time.</div>`}</div>
+        ${msg||storeErr?`<div class="snd-note">${esc(msg||storeErr)}</div>`:""}
+        <div class="snd-h">Listen online</div>
+        <div class="snd-links">${FIND.map(([n,u])=>`<a href="${u}" target="_blank" rel="noopener">${n}</a>`).join("")}${st.links.map((l,i)=>`<span class="mp-link"><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.name)}</a><button data-rmlink="${i}" aria-label="Remove link">×</button></span>`).join("")}</div>
+        ${addingLink?`<div class="mp-addlink"><input data-lname placeholder="Name, like “My m-flo playlist”"><input data-lurl placeholder="Paste a YouTube or Spotify link"><button class="snd-own" data-savelink>Save</button></div>`:`<button class="mp-add" data-addlink>+ Save a playlist link</button>`}
+        <div class="snd-h">Sound effects</div>
+        <div class="snd-seg" role="group">${[["off","Off"],["aero","In Aero mode"],["always","Always"]].map(([v,l])=>`<button data-sfx="${v}" aria-pressed="${st.sfxMode===v}">${l}</button>`).join("")}</div>
+        <div class="snd-row"><span>Effects volume</span><input type="range" min="0" max="1" step="0.05" value="${st.sfxVol}" data-vol="sfx" aria-label="Effects volume"></div>
+        <label class="snd-row snd-chk"><input type="checkbox" data-typing ${st.typing?"checked":""}> Soft typing clicks</label>
+      </div>`;
+      paint();
+    }
+    function paint(){const t=tracks.find(x=>x.id===curId);const c=el.querySelector("[data-cur]"),d=el.querySelector("[data-dur]"),sk=el.querySelector("[data-seek]");if(!c)return;
+      const dur=isFinite(audio.duration)?audio.duration:(t?t.dur:0);c.textContent=timeFmt(t?audio.currentTime:0);d.textContent=timeFmt(dur);
+      if(sk&&!sk.matches(":active")&&dur)sk.value=String(Math.round(audio.currentTime/dur*1000))}
+    async function handleFiles(files){msg="Adding…";render();const r=await addFiles(files);msg=r.added?`Added ${r.added} song${r.added===1?"":"s"}.`+(r.skipped?` ${r.skipped} file${r.skipped===1?" wasn't":"s weren't"} audio.`:""):"Those files aren't audio. Use MP3, WAV, M4A, FLAC or OGG.";render();if(r.added&&!curId)playTrack(tracks[tracks.length-r.added].id)}
+    el.addEventListener("click",e=>{
+      const b=e.target.closest("button");if(!b)return;
+      if(b.dataset.mp){const k=b.dataset.mp;if(k==="toggle")toggle();else if(k==="next")step(1);else if(k==="prev"){if(audio.currentTime>3)audio.currentTime=0;else step(-1)}
+        else if(k==="shuffle"){st.shuffle=!st.shuffle;order=[];persist();render()}else if(k==="repeat"){st.repeat=st.repeat==="all"?"one":st.repeat==="one"?"off":"all";persist();render()}return}
+      if(b.dataset.play){if(b.dataset.play===curId)toggle();else playTrack(b.dataset.play);return}
+      if(b.dataset.rm){msg="";remove(b.dataset.rm);return}
+      if(b.dataset.addlink!==undefined){addingLink=true;render();const i=el.querySelector("[data-lname]");i&&i.focus();return}
+      if(b.dataset.savelink!==undefined){const n=el.querySelector("[data-lname]").value.trim(),u=el.querySelector("[data-lurl]").value.trim();
+        if(!/^https?:\/\//i.test(u)){msg="Paste a full link that starts with https://";render();return}
+        st.links.push({name:n||u.replace(/^https?:\/\/(www\.)?/,"").slice(0,30),url:u});persist();addingLink=false;msg="";render();return}
+      if(b.dataset.rmlink){st.links.splice(Number(b.dataset.rmlink),1);persist();render();return}
+      if(b.dataset.sfx){st.sfxMode=b.dataset.sfx;persist();render();if(st.sfxMode!=="off"){const was=st.sfxMode;st.sfxMode="always";play("sparkle");st.sfxMode=was}}
+    });
+    el.addEventListener("change",e=>{
+      if(e.target.dataset.own!==undefined){const f=[...e.target.files];e.target.value="";if(f.length)handleFiles(f)}
+      if(e.target.dataset.typing!==undefined){st.typing=e.target.checked;persist()}
+      if(e.target.dataset.seek!==undefined){const dur=isFinite(audio.duration)?audio.duration:0;if(dur)audio.currentTime=Number(e.target.value)/1000*dur}
+    });
+    el.addEventListener("input",e=>{const k=e.target.dataset.vol;if(!k)return;const val=Number(e.target.value);
+      if(k==="mus"){st.musVol=val;audio.volume=val}else{st.sfxVol=val;if(ctx)sfxBus.gain.setTargetAtTime(val,ctx.currentTime,.05)}persist()});
+    el.addEventListener("pointerup",e=>{if(e.target.dataset&&e.target.dataset.vol==="sfx"){const was=st.sfxMode;st.sfxMode="always";play("pop");st.sfxMode=was}});
+    el.addEventListener("dragover",e=>{if([...e.dataTransfer.types].includes("Files")){e.preventDefault();e.stopPropagation();el.classList.add("mp-dropping")}});
+    el.addEventListener("dragleave",e=>{if(!el.contains(e.relatedTarget))el.classList.remove("mp-dropping")});
+    el.addEventListener("drop",e=>{const f=[...e.dataTransfer.files];el.classList.remove("mp-dropping");if(!f.length)return;e.preventDefault();e.stopPropagation();handleFiles(f)});
+    listeners.add(render);paints.add(paint);render();
+  }
+  return{play,typingTick,mountPanel,isPlaying:()=>!audio.paused,stop:()=>audio.pause()};
+})();
+
+const sfx=n=>{try{AeroAudio.play(n)}catch(e){}};
+let sndMounted=false;
+$("sndBtn").addEventListener("click",()=>{const pn=$("sndPanel");if(pn.hidden){if(!sndMounted){AeroAudio.mountPanel(pn);sndMounted=true}pn.hidden=false;$("sndBtn").setAttribute("aria-expanded","true");sfx("open")}else{pn.hidden=true;$("sndBtn").setAttribute("aria-expanded","false")}});
+app.addEventListener("pointerdown",e=>{const pn=$("sndPanel");if(!pn.hidden&&!e.target.closest("#sndPanel,#sndBtn")){pn.hidden=true;$("sndBtn").setAttribute("aria-expanded","false")}});
+function setAero(on,announce){
+  document.documentElement.classList.toggle("aero",on);if(pip)pip.document.documentElement.classList.toggle("aero",on);
+  $("aeroBtn").classList.toggle("on",on);$("aeroBtn").setAttribute("aria-pressed",String(on));
+  ls.set("floating-notes-aero",on?"1":"");
+  const sky=$("aeroSky");
+  if(on&&!sky.childElementCount){let h="";for(let i=0;i<14;i++){const sz=18+Math.random()*80,l=Math.random()*100,d=14+Math.random()*22,dl=-Math.random()*d,dx=(Math.random()*120-60).toFixed(0);
+    h+=`<span class="bub" style="width:${sz.toFixed(0)}px;height:${sz.toFixed(0)}px;left:${l.toFixed(1)}%;animation-duration:${d.toFixed(1)}s;animation-delay:${dl.toFixed(1)}s;--dx:${dx}px;opacity:${(.55+Math.random()*.45).toFixed(2)}"></span>`}sky.innerHTML=h}
+  if(announce){sfx(on?"swell":"close");toast(on?"Frutiger Aero on. Welcome back to 2008.":"Frutiger Aero off.")}
+}
+$("aeroBtn").addEventListener("click",()=>setAero(!document.documentElement.classList.contains("aero"),true));
+if(ls.get("floating-notes-aero"))setAero(true);
+load();render();renderSetup();renderNb();
+{const seen=ls.get("floating-notes-version");if(seen&&seen!==VERSION)setTimeout(()=>toast("Updated to v"+VERSION),600);ls.set("floating-notes-version",VERSION)}
+})();
+</script>
+</body>
+</html>
